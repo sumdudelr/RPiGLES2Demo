@@ -7,8 +7,8 @@
 
 #include <GLES2/gl2.h>
 
-#include "glm/glm.hpp"
-#include "glm/gtc/type_ptr.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
     // Receive the vertex/fragment source code from filePath
@@ -34,7 +34,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
         vertexCode = vShaderStream.str();
         fragmentCode = fShaderStream.str();
     }
-    catch (std::ifstream::failure e) {
+    catch (const std::ifstream::failure &e) {
         std::cerr << "Shader file could not be read" << std::endl;
     }
     const char* vShaderCode = vertexCode.c_str();

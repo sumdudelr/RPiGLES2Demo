@@ -13,4 +13,4 @@ gles_demo.out: main.cpp shader.o renderer.hpp
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) shader.o $< $(LIBRARY) -o $@
 	
 clean:
-	rm -f $(TARGET) *~
+	rm -f $(TARGET) *.o *~
