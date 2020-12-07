@@ -13,7 +13,7 @@ debug: $(TARGET)
 shader.o: shader.cpp shader.hpp
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 
-gles_demo.out: main.cpp shader.o renderer.hpp
+gles_demo.out: main.cpp shader.o renderer.hpp tessellator.hpp
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) shader.o $< $(LIBRARY) -o $@
 	
 clean:

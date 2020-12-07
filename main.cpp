@@ -1,5 +1,6 @@
 #include "renderer.hpp"
 #include "shader.hpp"
+#include "tessellator.hpp"
 
 #include <csignal>
 
@@ -24,6 +25,18 @@ int main() {
     render.initialize();
     
     Shader shader("vertshader.glsl", "fragshader.glsl");
+    
+    GLfloat positions[] = {
+        1.0f, 1.0f, 0.0f,
+        -1.0f,1.0f, 0.0f,
+        1.0f,-1.0f, 0.0f,
+        -1.0f,-1.0f,0.0f
+    };
+    
+    GLushort indexData[] = {
+        0,1,2, // first triangle
+        2,1,3  // second triangle
+    };
     
     GLfloat vertices[] = {
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -81,11 +94,17 @@ int main() {
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
     
+    Mesh mesh = SphereTessellator(2);
+    
     // Generate buffers
+    GLuint EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ushort)*mesh.indices.size(), &mesh.indices[0], GL_STATIC_DRAW);
     GLuint VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)*mesh.positions.size(), &mesh.positions[0], GL_STATIC_DRAW);
     
     // Get location for buffer attributes
     GLuint vPos = glGetAttribLocation(shader.ID, "aPos");
@@ -173,17 +192,20 @@ int main() {
             // Position attribute
             glEnableVertexAttribArray(vPos);
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glVertexAttribPointer(vPos, 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), (void*)0);
+            //~ glVertexAttribPointer(vPos, 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), (void*)0);
+            glVertexAttribPointer(vPos, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
             
             // Texture coord attribute
-            glEnableVertexAttribArray(tPos);
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glVertexAttribPointer(tPos, 2, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+            //~ glEnableVertexAttribArray(tPos);
+            //~ glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            //~ glVertexAttribPointer(tPos, 2, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
             
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+            glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_SHORT, (void*)0);
+            //~ glDrawArrays(GL_TRIANGLES, 0, 36);
             
             glDisableVertexAttribArray(vPos);
-            glDisableVertexAttribArray(tPos);
+            //~ glDisableVertexAttribArray(tPos);
         }
         
         render.updateScreen();
@@ -193,5 +215,6 @@ int main() {
     glDeleteTextures(1, &texture1);
     glDeleteTextures(1, &texture2);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
     render.cleanUp();
 }
