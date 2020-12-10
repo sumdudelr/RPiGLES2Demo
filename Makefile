@@ -10,11 +10,20 @@ all: $(TARGET)
 debug: CXX_FLAG += -g -fsanitize=address -fno-omit-frame-pointer -static-libasan
 debug: $(TARGET)
 
-shader.o: shader.cpp shader.hpp
+renderer.o: renderer.cpp renderer.hpp
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 
-gles_demo.out: main.cpp shader.o renderer.hpp tessellator.hpp
-	$(AGCC) $(CXX_FLAG) $(INCLUDE) shader.o $< $(LIBRARY) -o $@
+shader.o: shader.cpp shader.hpp
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
+	
+tessellator.o: tessellator.cpp tessellator.hpp
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
+	
+third_party.o: third_party.cpp stb_image.h stb_image_resize.h
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
+
+gles_demo.out: main.cpp shader.o renderer.o tessellator.o third_party.o
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) renderer.o shader.o tessellator.o third_party.o $< $(LIBRARY) -o $@
 	
 clean:
 	rm -f $(TARGET) *.o *~

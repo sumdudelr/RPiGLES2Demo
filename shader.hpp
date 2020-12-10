@@ -8,7 +8,8 @@
 
 #include <GLES2/gl2.h>
 
-#include <glm/glm.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class Shader {
 public:
