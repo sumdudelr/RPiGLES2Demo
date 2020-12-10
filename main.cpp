@@ -56,8 +56,8 @@ int main() {
     
     // Get location for buffer attributes
     GLint vPos = glGetAttribLocation(shader.ID, "aPos");
-    GLint nPos = glGetAttribLocation(shader.ID, "u_Norm");
-    //~ GLint tPos = glGetAttribLocation(shader.ID, "aTexCoord");
+    //~ GLint nPos = glGetAttribLocation(shader.ID, "u_Norm");
+    GLint tPos = glGetAttribLocation(shader.ID, "aTexCoord");
     
     // Create the textures
     GLuint texture1;
@@ -70,7 +70,7 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     // Load and generate the texture
     int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true); // flip images along y-axis
+    //stbi_set_flip_vertically_on_load(true); // flip images along y-axis
     unsigned char *data = stbi_load("NE2_50M_SR_W_4096.jpg", &width, &height, &nrChannels, 0);
     int texWidth = 1080;
     int texHeight = 720;
@@ -117,7 +117,8 @@ int main() {
         for (int i = 0; i < 10; i++) {
             glm::mat4 model(1.0f);
             model = glm::translate(model, cubePositions[i]);
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
             shader.setMat4("model", model);
         
             // Position attribute
@@ -126,21 +127,21 @@ int main() {
             glVertexAttribPointer(vPos, 3, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)0);
             
             // Normal attribute
-            glEnableVertexAttribArray(nPos);
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glVertexAttribPointer(nPos, 3, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)sizeof(glm::vec3));
+            //~ glEnableVertexAttribArray(nPos);
+            //~ glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            //~ glVertexAttribPointer(nPos, 3, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)sizeof(glm::vec3));
             
             // Texture coord attribute
-            //~ glEnableVertexAttribArray(tPos);
-            //~ glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            //~ glVertexAttribPointer(tPos, 2, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)(sizeof(glm::vec3)+sizeof(glm::vec3)));
+            glEnableVertexAttribArray(tPos);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glVertexAttribPointer(tPos, 2, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)(sizeof(glm::vec3)+sizeof(glm::vec3)));
             
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
             glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_SHORT, (void*)0);
             
             glDisableVertexAttribArray(vPos);
-            glDisableVertexAttribArray(nPos);
-            //~ glDisableVertexAttribArray(tPos);
+            //~ glDisableVertexAttribArray(nPos);
+            glDisableVertexAttribArray(tPos);
         }
         
         render.updateScreen();

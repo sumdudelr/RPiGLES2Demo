@@ -21,7 +21,7 @@ int NumberOfTriangles(int numberOfSubdivisions) {
 }
 
 glm::vec2 ComputeTextureCoordinate(glm::vec3 position) {
-    glm::vec2 coord(std::atan2(position.y, position.x) / (M_PI*2) + 0.5f,
+    glm::vec2 coord(-std::atan2(position.y, position.x) / (M_PI*2) + 0.5f,
         std::asin(position.z) / M_PI + 0.5f);
         
     return coord;
@@ -87,6 +87,12 @@ Mesh EllipseTessellator(int numberOfSubdivisions) {
         1.0f / (radii.z * radii.z));
     
     Mesh mesh;
+    
+    int numVertices = NumberOfVertices(numberOfSubdivisions);
+    int numIndices = 3 * NumberOfTriangles(numberOfSubdivisions);
+    
+    mesh.attributes.reserve(numVertices);
+    mesh.indices.reserve(numIndices);
     
     // Initial tetrahedron
     float negativeRootTwoOverThree = -std::sqrt(2.0f) / 3.0f;
