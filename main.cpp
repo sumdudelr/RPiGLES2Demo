@@ -10,6 +10,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "stb_image_resize.h"
+
 static volatile int terminate;
 
 void signal_handler(int signal) {
@@ -26,61 +29,6 @@ int main() {
     
     Shader shader("vertshader.glsl", "fragshader.glsl");
     
-    GLfloat positions[] = {
-        1.0f, 1.0f, 0.0f,
-        -1.0f,1.0f, 0.0f,
-        1.0f,-1.0f, 0.0f,
-        -1.0f,-1.0f,0.0f
-    };
-    
-    GLushort indexData[] = {
-        0,1,2, // first triangle
-        2,1,3  // second triangle
-    };
-    
-    GLfloat vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
     glm::vec3 cubePositions[] = {
         glm::vec3(0.0f,  0.0f,  0.0f),
         glm::vec3(2.0f,  5.0f, -15.0f),
@@ -94,7 +42,7 @@ int main() {
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
     
-    Mesh mesh = SphereTessellator(2);
+    Mesh mesh = EllipseTessellator(5);
     
     // Generate buffers
     GLuint EBO;
@@ -104,50 +52,36 @@ int main() {
     GLuint VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)*mesh.positions.size(), &mesh.positions[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Attributes)*mesh.attributes.size(), &mesh.attributes[0], GL_STATIC_DRAW);
     
     // Get location for buffer attributes
-    GLuint vPos = glGetAttribLocation(shader.ID, "aPos");
-    GLuint tPos = glGetAttribLocation(shader.ID, "aTexCoord");
+    GLint vPos = glGetAttribLocation(shader.ID, "aPos");
+    GLint nPos = glGetAttribLocation(shader.ID, "u_Norm");
+    //~ GLint tPos = glGetAttribLocation(shader.ID, "aTexCoord");
     
     // Create the textures
-    GLuint texture1, texture2;
+    GLuint texture1;
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
     // Set wrapping/filtering options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     // Load and generate the texture
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // flip images along y-axis
-    unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("NE2_50M_SR_W_4096.jpg", &width, &height, &nrChannels, 0);
+    int texWidth = 1080;
+    int texHeight = 720;
+    unsigned char data2[texWidth*texHeight*nrChannels];
     if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        stbir_resize_uint8(data, width, height, 0, &data2[0], texWidth, texHeight, 0, nrChannels);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
+        //glGenerateMipmap(GL_TEXTURE_2D);
     } else {
         std::cerr << "Failed to load texture 1" << std::endl;
     }
-    stbi_image_free(data);
-    // Second texture
-    glGenTextures(1, &texture2);
-    glBindTexture(GL_TEXTURE_2D, texture2);
-    // Set wrapping/filtering options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // Load and generate the texture
-    data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
-    if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cerr << "Failed to load texture 2" << std::endl;
-    }
-    stbi_image_free(data);
-    
     
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -164,9 +98,6 @@ int main() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
         shader.setInt("texture1", 0);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
-        shader.setInt("texture2", 1);
         
         glm::mat4 projection = glm::perspective(
             glm::radians(45.0f),
@@ -192,28 +123,42 @@ int main() {
             // Position attribute
             glEnableVertexAttribArray(vPos);
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            //~ glVertexAttribPointer(vPos, 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), (void*)0);
-            glVertexAttribPointer(vPos, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+            glVertexAttribPointer(vPos, 3, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)0);
+            
+            // Normal attribute
+            glEnableVertexAttribArray(nPos);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glVertexAttribPointer(nPos, 3, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)sizeof(glm::vec3));
             
             // Texture coord attribute
             //~ glEnableVertexAttribArray(tPos);
             //~ glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            //~ glVertexAttribPointer(tPos, 2, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+            //~ glVertexAttribPointer(tPos, 2, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)(sizeof(glm::vec3)+sizeof(glm::vec3)));
             
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
             glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_SHORT, (void*)0);
-            //~ glDrawArrays(GL_TRIANGLES, 0, 36);
             
             glDisableVertexAttribArray(vPos);
+            glDisableVertexAttribArray(nPos);
             //~ glDisableVertexAttribArray(tPos);
         }
         
         render.updateScreen();
+        
+        // Check for errors
+        GLenum err = glGetError();
+        if (err != GL_NO_ERROR) {
+            std::cerr << "OpenGL Error! " << err << std::endl;
+            if (err == GL_OUT_OF_MEMORY)
+                std::cerr << "Out of memory!" << std::endl;
+            if (err == GL_INVALID_VALUE)
+                std::cerr << "Invalid value!" << std::endl;
+            terminate = true;
+        }
     } while(!terminate);
     
     // Clean up
     glDeleteTextures(1, &texture1);
-    glDeleteTextures(1, &texture2);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
     render.cleanUp();
