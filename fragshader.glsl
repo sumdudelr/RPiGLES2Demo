@@ -7,7 +7,7 @@ uniform sampler2D texture2;
 
 vec2 ComputeTextureCoordinates(vec3 normal)
 {
-    return vec2(atan(normal.y, normal.x) * (1.0/(2.0*radians(180.0))) + 0.5, asin(normal.z) * (1.0/radians(180.0)) + 0.5);
+    return vec2(-atan(normal.y, normal.x) * (1.0/(2.0*radians(180.0))) + 0.5, asin(normal.z) * (1.0/radians(180.0)) + 0.5);
 }
 
 void main()

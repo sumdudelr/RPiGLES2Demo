@@ -29,20 +29,9 @@ int main() {
     
     Shader shader("vertshader.glsl", "fragshader.glsl");
     
-    glm::vec3 cubePositions[] = {
-        glm::vec3(0.0f,  0.0f,  0.0f),
-        glm::vec3(2.0f,  5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3(2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f,  3.0f, -7.5f),
-        glm::vec3(1.3f, -2.0f, -2.5f),
-        glm::vec3(1.5f,  2.0f, -2.5f),
-        glm::vec3(1.5f,  0.2f, -1.5f),
-        glm::vec3(-1.3f,  1.0f, -1.5f)
-    };
+    glm::vec3 globePosition(0.0f,  0.0f,  0.0f);
     
-    Mesh mesh = EllipseTessellator(5);
+    Mesh mesh = EllipseTessellator(6);
     
     // Generate buffers
     GLuint EBO;
@@ -64,7 +53,7 @@ int main() {
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
     // Set wrapping/filtering options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -78,13 +67,14 @@ int main() {
     if (data) {
         stbir_resize_uint8(data, width, height, 0, &data2[0], texWidth, texHeight, 0, nrChannels);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
-        //glGenerateMipmap(GL_TEXTURE_2D);
+        glGenerateMipmap(GL_TEXTURE_2D);
     } else {
         std::cerr << "Failed to load texture 1" << std::endl;
     }
     
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    glClearColor(0.0f,0.0f,0.0f,0.0f);
     
     float angle = 0.0f;
     
@@ -114,35 +104,34 @@ int main() {
             glm::vec3(0.0f,1.0f,0.0f));
         shader.setMat4("view", view);
         
-        for (int i = 0; i < 10; i++) {
-            glm::mat4 model(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
-            shader.setMat4("model", model);
         
-            // Position attribute
-            glEnableVertexAttribArray(vPos);
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glVertexAttribPointer(vPos, 3, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)0);
-            
-            // Normal attribute
-            //~ glEnableVertexAttribArray(nPos);
-            //~ glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            //~ glVertexAttribPointer(nPos, 3, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)sizeof(glm::vec3));
-            
-            // Texture coord attribute
-            glEnableVertexAttribArray(tPos);
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glVertexAttribPointer(tPos, 2, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)(sizeof(glm::vec3)+sizeof(glm::vec3)));
-            
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-            glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_SHORT, (void*)0);
-            
-            glDisableVertexAttribArray(vPos);
-            //~ glDisableVertexAttribArray(nPos);
-            glDisableVertexAttribArray(tPos);
-        }
+        glm::mat4 model(1.0f);
+        model = glm::translate(model, globePosition);
+        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+        shader.setMat4("model", model);
+    
+        // Position attribute
+        glEnableVertexAttribArray(vPos);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glVertexAttribPointer(vPos, 3, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)0);
+        
+        // Normal attribute
+        //~ glEnableVertexAttribArray(nPos);
+        //~ glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        //~ glVertexAttribPointer(nPos, 3, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)sizeof(glm::vec3));
+        
+        // Texture coord attribute
+        glEnableVertexAttribArray(tPos);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glVertexAttribPointer(tPos, 2, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)(sizeof(glm::vec3)+sizeof(glm::vec3)));
+        
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_SHORT, (void*)0);
+        
+        glDisableVertexAttribArray(vPos);
+        //~ glDisableVertexAttribArray(nPos);
+        glDisableVertexAttribArray(tPos);
         
         render.updateScreen();
         
