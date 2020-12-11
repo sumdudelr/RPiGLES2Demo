@@ -10,10 +10,13 @@ uniform sampler2D texture2;
 float LightIntensity(vec3 normal, vec3 lightPos, vec3 fragPos)
 {
     vec3 lightDir = normalize(lightPos);
-    float diffuse = max(dot(normal, lightDir), 0.0);
+    float diffuse = max(dot(normal, lightDir), 0.0) * 0.7;
+    vec3 viewDir = normalize(fragPos);
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float specular = pow(max(dot(viewDir, reflectDir), 0.0), 32.0) * 0.5;
     float ambient = 0.1;
     
-    return diffuse + ambient;
+    return diffuse + specular + ambient;
 }
 
 vec2 ComputeTextureCoordinates(vec3 normal)
