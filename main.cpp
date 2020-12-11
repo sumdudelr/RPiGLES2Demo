@@ -45,7 +45,7 @@ int main() {
     
     // Get location for buffer attributes
     GLint vPos = glGetAttribLocation(shader.ID, "aPos");
-    //~ GLint nPos = glGetAttribLocation(shader.ID, "u_Norm");
+    GLint nPos = glGetAttribLocation(shader.ID, "u_Norm");
     GLint tPos = glGetAttribLocation(shader.ID, "aTexCoord");
     
     // Create the textures
@@ -110,6 +110,14 @@ int main() {
         model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
         shader.setMat4("model", model);
+        
+        // Inverse transpose of model
+        glm::mat3 ipModel = glm::transpose(glm::inverse(model));
+        shader.setMat3("ipModel", ipModel);
+        
+        // Light position
+        glm::vec3 light(-2.0f,0.0f,2.0f);
+        shader.setVec3("lightPos", light);
     
         // Position attribute
         glEnableVertexAttribArray(vPos);
@@ -117,9 +125,9 @@ int main() {
         glVertexAttribPointer(vPos, 3, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)0);
         
         // Normal attribute
-        //~ glEnableVertexAttribArray(nPos);
-        //~ glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        //~ glVertexAttribPointer(nPos, 3, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)sizeof(glm::vec3));
+        glEnableVertexAttribArray(nPos);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glVertexAttribPointer(nPos, 3, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)sizeof(glm::vec3));
         
         // Texture coord attribute
         glEnableVertexAttribArray(tPos);
@@ -130,7 +138,7 @@ int main() {
         glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_SHORT, (void*)0);
         
         glDisableVertexAttribArray(vPos);
-        //~ glDisableVertexAttribArray(nPos);
+        glDisableVertexAttribArray(nPos);
         glDisableVertexAttribArray(tPos);
         
         render.updateScreen();
