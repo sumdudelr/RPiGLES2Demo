@@ -32,4 +32,17 @@ glm::vec3 RotateAroundAxis(glm::vec3 vec, glm::vec3 axis, float theta) {
     return result;
 }
 
+glm::vec3 GeodeticToCart(glm::vec3 geodetic) {
+    float cosLatitude = std::cos(geodetic.y);
+    
+    glm::vec3 n(cosLatitude * std::cos(geodetic.x),
+        cosLatitude * std::sin(geodetic.x),
+        std::sin(geodetic.y));
+    glm::vec3 k = n * glm::vec3(6378137.0f * 6378137.0f);
+    float gamma = std::sqrt((k.x * n.x) + (k.y * n.y) + (k.z * n.z));
+    
+    glm::vec3 rSurface = k / glm::vec3(gamma);
+    return rSurface + (glm::vec3(geodetic.z) * n);
+}
+
 #endif

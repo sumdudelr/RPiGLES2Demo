@@ -59,15 +59,12 @@ void Globe::init(int screenWidth, int screenHeight) {
     
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-    glClearColor(0.0f,0.0f,0.0f,0.0f);
     
     _angle = 0.0f;
 }
 
 void Globe::render() {
     _angle += 0.2f;
-    
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     _shader.use();
     

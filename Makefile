@@ -24,9 +24,12 @@ third_party.o: third_party.cpp stb_image.h stb_image_resize.h
 	
 globe.o: globe.cpp globe.hpp renderer.o shader.o tessellator.o
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
+	
+lines.o: lines.cpp lines.hpp ellipsoid.hpp shader.o
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 
-gles_demo.out: main.cpp shader.o renderer.o tessellator.o third_party.o globe.o
-	$(AGCC) $(CXX_FLAG) $(INCLUDE) renderer.o shader.o tessellator.o third_party.o globe.o $< $(LIBRARY) -o $@
+gles_demo.out: main.cpp shader.o renderer.o tessellator.o third_party.o globe.o lines.o
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) renderer.o shader.o tessellator.o third_party.o globe.o lines.o $< $(LIBRARY) -o $@
 	
 clean:
 	rm -f $(TARGET) *.o *~
