@@ -7,7 +7,7 @@
 
 #include <GLES2/gl2.h>
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath) {
+void Shader::init(const char* vertexPath, const char* fragmentPath) {
     // Receive the vertex/fragment source code from filePath
     std::string vertexCode;
     std::string fragmentCode;

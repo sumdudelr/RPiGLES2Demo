@@ -17,8 +17,11 @@ public:
     // The program ID
     GLuint ID;
     
-    // Constructor that reads and builds the shader
-    Shader(const char* vertexPath, const char* fragmentPath);
+    // Constructor
+    Shader(){};
+    
+    // Reads and builds the shader
+    void init(const char* vertexPath, const char* fragmentPath);
     
     // Use/activate the shader
     void use();
