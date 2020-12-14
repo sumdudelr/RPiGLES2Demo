@@ -1,3 +1,5 @@
+#include "renderer.hpp"
+#include "camera.hpp"
 #include "globe.hpp"
 #include "lines.hpp"
 
@@ -17,11 +19,16 @@ int main() {
     Renderer render;
     render.initialize();
     
+    float aspect = (float)render.screen_wid_ / (float)render.screen_hei_;
+    
+    Camera camera(aspect, glm::vec3(0.0f, 0.0f, 3.0f));
+    camera.zoomToTarget(6378137.0f);
+    
     Globe globe;
-    globe.init(render.screen_wid_, render.screen_hei_);
+    globe.init(&camera);
     
     Lines lines;
-    lines.init(render.screen_wid_, render.screen_hei_);
+    lines.init(&camera);
     
     do {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

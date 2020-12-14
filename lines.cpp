@@ -13,14 +13,14 @@ Lines::~Lines() {
     
 }
 
-void Lines::init(int screenWidth, int screenHeight) {
-    _aspect = (float)screenWidth / (float)screenHeight;
+void Lines::init(Camera* camera) {
+    _camera = camera;
     
     // Create an arc between two lat/lon points
-    glm::vec3 start(glm::radians(82.0f), glm::radians(-39.0f), 0.0f);
-    start = glm::normalize(GeodeticToCart(start));
-    glm::vec3 stop(glm::radians(118.0f), glm::radians(-34.0f), 0.0f);
-    stop = glm::normalize(GeodeticToCart(stop));
+    glm::vec3 start(glm::radians(82.0f), glm::radians(-39.0f), 1500000.0f);
+    start = GeodeticToCart(start);
+    glm::vec3 stop(glm::radians(118.0f), glm::radians(-34.0f), 1500000.0f);
+    stop = GeodeticToCart(stop);
     glm::vec3 radii(6378137.0f, 6378137.0f, 6356752.314245f);
     glm::vec3 oneOverRadiiSquared(
         1.0f / (radii.x * radii.x),
@@ -34,12 +34,7 @@ void Lines::init(int screenWidth, int screenHeight) {
     _curvePositions.push_back(start);
     for (int i = 1; i <= n; i++) {
         float phi = (i * granularity);
-        glm::vec3 a = glm::rotate(start, phi, normal);
-        float beta = 1.0f / std::sqrt(
-            (a.x * a.x) * oneOverRadiiSquared.x +
-            (a.y * a.y) * oneOverRadiiSquared.y +
-            (a.z * a.z) * oneOverRadiiSquared.z);
-        _curvePositions.push_back(glm::normalize(beta * a));
+        _curvePositions.push_back(glm::rotate(start, phi, normal));
     }
     _curvePositions.push_back(stop);
      
@@ -65,19 +60,10 @@ void Lines::render() {
     
     _shader.use();
     
-    glm::mat4 projection = glm::perspective(
-        glm::radians(45.0f),
-        _aspect,
-        0.1f,
-        100.0f);
+    glm::mat4 projection = _camera->getProjectionMatrix();
     _shader.setMat4("projection", projection);
     
-    glm::mat4 view(1.0f);
-    //view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    view = glm::lookAt(
-        glm::vec3(0.0f,0.0f,3.0f),
-        glm::vec3(0.0f,0.0f,0.0f),
-        glm::vec3(0.0f,1.0f,0.0f));
+    glm::mat4 view = _camera->getViewMatrix();
     _shader.setMat4("view", view);
     
     glm::mat4 model(1.0f);

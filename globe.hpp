@@ -4,12 +4,13 @@
 #include "renderer.hpp"
 #include "shader.hpp"
 #include "tessellator.hpp"
+#include "camera.hpp"
 
 class Globe {
 public:
     Globe();
     ~Globe();
-    void init(int screenWidth, int screenHeight);
+    void init(Camera* camera);
     void render();
     
 private:
@@ -29,8 +30,8 @@ private:
     // Globe rotation angle
     float _angle;
     
-    // Information from renderer
-    float _aspect;
+    // Pointer to shared camera
+    Camera* _camera;
 };
 
 #endif

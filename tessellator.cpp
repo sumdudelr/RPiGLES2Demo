@@ -40,9 +40,9 @@ void Subdivide(Mesh& mesh, int t1, int t2, int t3, int level) {
         glm::vec3 n12 = glm::normalize((mesh.attributes[t2].positions + mesh.attributes[t3].positions) * 0.5f);
         glm::vec3 n20 = glm::normalize((mesh.attributes[t3].positions + mesh.attributes[t1].positions) * 0.5f);
         
-        glm::vec3 p01 = glm::normalize(n01 * radii);
-        glm::vec3 p12 = glm::normalize(n12 * radii);
-        glm::vec3 p20 = glm::normalize(n20 * radii);
+        glm::vec3 p01 = n01 * radii;
+        glm::vec3 p12 = n12 * radii;
+        glm::vec3 p20 = n20 * radii;
         
         glm::vec3 d01 = glm::normalize(p01 * oneOverRadiiSquared);
         glm::vec3 d12 = glm::normalize(p12 * oneOverRadiiSquared);
@@ -104,10 +104,10 @@ Mesh EllipseTessellator(int numberOfSubdivisions) {
     glm::vec3 n2(-rootSixOverThree, negativeRootTwoOverThree, negativeOneThird);
     glm::vec3 n3(rootSixOverThree, negativeRootTwoOverThree, negativeOneThird);
     
-    glm::vec3 p0 = glm::normalize(n0 * radii);
-    glm::vec3 p1 = glm::normalize(n1 * radii);
-    glm::vec3 p2 = glm::normalize(n2 * radii);
-    glm::vec3 p3 = glm::normalize(n3 * radii);
+    glm::vec3 p0 = n0 * radii;
+    glm::vec3 p1 = n1 * radii;
+    glm::vec3 p2 = n2 * radii;
+    glm::vec3 p3 = n3 * radii;
     
     glm::vec3 d0 = glm::normalize(p0 * oneOverRadiiSquared);
     glm::vec3 d1 = glm::normalize(p1 * oneOverRadiiSquared);

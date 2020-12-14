@@ -17,8 +17,8 @@ Globe::~Globe() {
     glDeleteBuffers(2, &_buffers[0]);
 }
 
-void Globe::init(int screenWidth, int screenHeight) {
-    _aspect = (float)screenWidth / (float)screenHeight;
+void Globe::init(Camera* camera) {
+    _camera = camera;
     
     _position = glm::vec3(0.0f, 0.0f, 0.0f);
     _mesh = EllipseTessellator(6);
@@ -72,19 +72,10 @@ void Globe::render() {
     glBindTexture(GL_TEXTURE_2D, _tex);
     _shader.setInt("texture1", 0);
     
-    glm::mat4 projection = glm::perspective(
-        glm::radians(45.0f),
-        _aspect,
-        0.1f,
-        100.0f);
+    glm::mat4 projection = _camera->getProjectionMatrix();
     _shader.setMat4("projection", projection);
     
-    glm::mat4 view(1.0f);
-    //view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    view = glm::lookAt(
-        glm::vec3(0.0f,0.0f,3.0f),
-        glm::vec3(0.0f,0.0f,0.0f),
-        glm::vec3(0.0f,1.0f,0.0f));
+    glm::mat4 view = _camera->getViewMatrix();
     _shader.setMat4("view", view);
     
     glm::mat4 model(1.0f);

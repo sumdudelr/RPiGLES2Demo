@@ -2,6 +2,7 @@
 #define LINES_H
 
 #include "shader.hpp"
+#include "camera.hpp"
 
 #include <vector>
 
@@ -9,7 +10,7 @@ class Lines {
 public:
     Lines();
     ~Lines();
-    void init(int screenWidth, int screenHeight);
+    void init(Camera* camera);
     void render();
     
 private:
@@ -23,7 +24,7 @@ private:
     
     float _angle;
     
-    // Information from renderer
-    float _aspect;
+    // Pointer to shared camera
+    Camera* _camera;
 };
 #endif
