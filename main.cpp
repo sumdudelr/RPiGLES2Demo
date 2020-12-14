@@ -2,6 +2,7 @@
 #include "camera.hpp"
 #include "globe.hpp"
 #include "lines.hpp"
+#include "points.hpp"
 
 #include <csignal>
 
@@ -30,11 +31,15 @@ int main() {
     Lines lines;
     lines.init(&camera);
     
+    Points points;
+    points.init(&camera);
+    
     do {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         globe.render();
         lines.render();
+        points.render();
         render.updateScreen();
         
         // Check for errors

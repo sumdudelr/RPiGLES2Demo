@@ -16,6 +16,9 @@ renderer.o: renderer.cpp renderer.hpp
 shader.o: shader.cpp shader.hpp
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 	
+ellipsoid.o: ellipsoid.cpp ellipsoid.hpp
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
+	
 camera.o: camera.cpp camera.hpp
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 	
@@ -28,11 +31,14 @@ third_party.o: third_party.cpp stb_image.h stb_image_resize.h
 globe.o: globe.cpp globe.hpp renderer.o shader.o tessellator.o camera.o
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 	
-lines.o: lines.cpp lines.hpp ellipsoid.hpp shader.o camera.o
+lines.o: lines.cpp lines.hpp ellipsoid.hpp shader.o camera.o ellipsoid.o
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
+	
+points.o: points.cpp points.hpp ellipsoid.hpp shader.o camera.o ellipsoid.o
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 
-gles_demo.out: main.cpp renderer.o camera.o globe.o lines.o
-	$(AGCC) $(CXX_FLAG) $(INCLUDE) renderer.o shader.o camera.o tessellator.o third_party.o globe.o lines.o $< $(LIBRARY) -o $@
+gles_demo.out: main.cpp renderer.o camera.o globe.o lines.o points.o
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) renderer.o shader.o ellipsoid.o camera.o tessellator.o third_party.o globe.o lines.o points.o $< $(LIBRARY) -o $@
 	
 clean:
 	rm -f $(TARGET) *.o *~

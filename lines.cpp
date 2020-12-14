@@ -10,7 +10,7 @@
 Lines::Lines() { }
 
 Lines::~Lines() {
-    
+    glDeleteBuffers(1, &_buffers[0]);
 }
 
 void Lines::init(Camera* camera) {
