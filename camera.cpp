@@ -1,13 +1,16 @@
 #include "camera.hpp"
 
 Camera::Camera(
-    float aspect,
+    float width,
+    float height,
     glm::vec3 position,
     glm::vec3 up,
     float yaw,
     float pitch) {
         
-    aspect_ = aspect;
+    width_ = width;
+    height_ = height;
+    aspect_ = width_ / height_;
     
     front_ = glm::vec3(0.0f, 0.0f, -1.0f);
     zoom_ = 45.0f;
@@ -28,6 +31,10 @@ glm::mat4 Camera::getViewMatrix() {
 
 glm::mat4 Camera::getProjectionMatrix() {
     return glm::perspective(zoom_, aspect_, nearClip_, farClip_);
+}
+
+glm::mat4 Camera::getOrthoMatrix() {
+    return glm::ortho(-width_/2.0f, width_/2.0f, -height_/2.0f, height_/2.0f);
 }
 
 void Camera::zoomToTarget(float radius) {

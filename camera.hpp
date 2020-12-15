@@ -18,12 +18,15 @@ public:
     // Clip space parameters
     float zoom_; // fov
     float aspect_;
+    float width_;
+    float height_;
     float nearClip_;
     float farClip_;
     
     // Constructor with vectors
     Camera(
-        float aspect = 1.0f,
+        float width = 800.0f,
+        float height = 600.0f,
         glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
         float yaw = -90.0f,
@@ -34,6 +37,9 @@ public:
     
     // Returns projection matrix calculated from clip space parameters
     glm::mat4 getProjectionMatrix();
+    
+    // Returns matrix for an orthographic projection (handy for text labels)
+    glm::mat4 getOrthoMatrix();
     
     // Move the camera to have a certain object in view
     // Also adjusts the clip space to reasonable values for the new position

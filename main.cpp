@@ -3,6 +3,7 @@
 #include "globe.hpp"
 #include "lines.hpp"
 #include "points.hpp"
+#include "label.hpp"
 
 #include <csignal>
 
@@ -20,26 +21,31 @@ int main() {
     Renderer render;
     render.initialize();
     
-    float aspect = (float)render.screen_wid_ / (float)render.screen_hei_;
+    Camera camera((float)render.screen_wid_, (float)render.screen_hei_, glm::vec3(0.0f, 0.0f, 3.0f));
+    //~ camera.zoomToTarget(6378137.0f);
     
-    Camera camera(aspect, glm::vec3(0.0f, 0.0f, 3.0f));
-    camera.zoomToTarget(6378137.0f);
+    //~ Globe globe;
+    //~ globe.init(&camera);
     
-    Globe globe;
-    globe.init(&camera);
+    //~ Lines lines;
+    //~ lines.init(&camera);
     
-    Lines lines;
-    lines.init(&camera);
+    //~ Points points;
+    //~ points.init(&camera);
     
-    Points points;
-    points.init(&camera);
+    Label label;
+    label.init(&camera);
+    
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
     
     do {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        globe.render();
-        lines.render();
-        points.render();
+        //~ globe.render();
+        //~ lines.render();
+        //~ points.render();
+        label.render();
         render.updateScreen();
         
         // Check for errors

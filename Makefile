@@ -25,20 +25,23 @@ camera.o: camera.cpp camera.hpp
 tessellator.o: tessellator.cpp tessellator.hpp
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 	
-third_party.o: third_party.cpp stb_image.h stb_image_resize.h
+third_party.o: third_party.cpp stb_image.h stb_image_resize.h stb_truetype.h
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 	
-globe.o: globe.cpp globe.hpp renderer.o shader.o tessellator.o camera.o
+globe.o: globe.cpp globe.hpp renderer.hpp shader.hpp tessellator.hpp camera.hpp
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 	
-lines.o: lines.cpp lines.hpp ellipsoid.hpp shader.o camera.o ellipsoid.o
+lines.o: lines.cpp lines.hpp ellipsoid.hpp shader.hpp camera.hpp ellipsoid.hpp
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 	
-points.o: points.cpp points.hpp ellipsoid.hpp shader.o camera.o ellipsoid.o
+points.o: points.cpp points.hpp ellipsoid.hpp shader.hpp camera.hpp ellipsoid.hpp
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
+	
+label.o: label.cpp label.hpp shader.hpp camera.hpp stb_truetype.h
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 
-gles_demo.out: main.cpp renderer.o camera.o globe.o lines.o points.o
-	$(AGCC) $(CXX_FLAG) $(INCLUDE) renderer.o shader.o ellipsoid.o camera.o tessellator.o third_party.o globe.o lines.o points.o $< $(LIBRARY) -o $@
+gles_demo.out: main.cpp renderer.o camera.o shader.o ellipsoid.o tessellator.o globe.o lines.o points.o label.o third_party.o
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) renderer.o shader.o ellipsoid.o camera.o tessellator.o third_party.o globe.o lines.o points.o label.o $< $(LIBRARY) -o $@
 	
 clean:
 	rm -f $(TARGET) *.o *~

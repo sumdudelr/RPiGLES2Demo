@@ -57,9 +57,6 @@ void Globe::init(Camera* camera) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, nWidth, nHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
     glGenerateMipmap(GL_TEXTURE_2D);
     
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    
     _angle = 0.0f;
 }
 
