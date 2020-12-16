@@ -21,17 +21,17 @@ int main() {
     Renderer render;
     render.initialize();
     
-    Camera camera((float)render.screen_wid_, (float)render.screen_hei_, glm::vec3(0.0f, 0.0f, 3.0f));
-    //~ camera.zoomToTarget(6378137.0f);
+    Camera camera((float)render.screen_wid_, (float)render.screen_hei_, glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+    camera.zoomToTarget(6378137.0f * 1.25f);
     
-    //~ Globe globe;
-    //~ globe.init(&camera);
+    Globe globe;
+    globe.init(&camera);
     
-    //~ Lines lines;
-    //~ lines.init(&camera);
+    Lines lines;
+    lines.init(&camera);
     
-    //~ Points points;
-    //~ points.init(&camera);
+    Points points;
+    points.init(&camera);
     
     Label label;
     label.init(&camera);
@@ -42,9 +42,9 @@ int main() {
     do {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        //~ globe.render();
-        //~ lines.render();
-        //~ points.render();
+        globe.render();
+        lines.render();
+        points.render();
         label.render();
         render.updateScreen();
         

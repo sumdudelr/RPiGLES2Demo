@@ -61,7 +61,7 @@ void Globe::init(Camera* camera) {
 }
 
 void Globe::render() {
-    _angle += 0.2f;
+    //~ _angle += 0.2f;
     
     _shader.use();
     
@@ -77,7 +77,7 @@ void Globe::render() {
     
     glm::mat4 model(1.0f);
     model = glm::translate(model, _position);
-    model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    //~ model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(_angle), glm::vec3(0.0f, 0.0f, 1.0f));
     _shader.setMat4("model", model);
     
@@ -86,7 +86,7 @@ void Globe::render() {
     _shader.setMat3("ipModel", ipModel);
     
     // Light position
-    glm::vec3 light(-2.0f,0.0f,2.0f);
+    glm::vec3 light(-1.0f,1.0f,0.0f);
     _shader.setVec3("lightPos", light);
     
     // Position attribute

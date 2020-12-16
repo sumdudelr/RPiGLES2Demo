@@ -33,7 +33,7 @@ void Points::init(Camera* camera) {
 }
 
 void Points::render() {
-    _angle += 0.2f;
+    //~ _angle += 0.2f;
     
     _shader.use();
     
@@ -45,7 +45,7 @@ void Points::render() {
     
     glm::mat4 model(1.0f);
     //model = glm::translate(model, _position);
-    model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    //~ model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(_angle), glm::vec3(0.0f, 0.0f, 1.0f));
     _shader.setMat4("model", model);
     

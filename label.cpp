@@ -17,7 +17,8 @@ Label::~Label() {
 void Label::init(Camera* camera) {
     _camera = camera;
     
-    _position = glm::vec3(0.0f, 0.0f, 0.0f);
+    _position = glm::vec3(glm::radians(82.0f), glm::radians(-39.0f), 1500000.0f);
+    _position = GeodeticToCart(_position);
     
     // Generate text for point labels
     unsigned char temp_bitmap[512*512];
@@ -34,7 +35,7 @@ void Label::init(Camera* camera) {
     
     float minX = 0.0f, minY = 0.0f, maxX = 0.0f, maxY = 0.0f; // Keep track of the overall bounds
     float x = 0.0f, y = 0.0f;
-    char message[] = "Hello world!";
+    char message[] = "Athens, OH";
     char* text = &message[0];
     while (*text) {
         if (*text >= 32 && *text < 128) {
@@ -76,8 +77,8 @@ void Label::init(Camera* camera) {
     float width = (maxX - minX) / 2.0f;
     float height = (maxY - minY) / 2.0f;
     
-    // Shift so the middle is at 0,0
-    _positionShift = glm::vec3(-width, -height, 0.0f);
+    // Shift so the middle is 20 px above 0,0
+    _positionShift = glm::vec3(-width, -height + 20.0f, 0.0f);
     
     // Create a box to surround the text
     Attrib topLeft = {glm::vec2(minX, minY), glm::vec2(0.0f, 0.1f)};
@@ -117,8 +118,11 @@ void Label::render() {
     glm::mat4 projection = _camera->getOrthoMatrix();
     _shader.setMat4("projection", projection);
     
+    // Get clip-space coordianates of perspective point (should probably do this in shader)
+    glm::vec2 pos = _camera->getScreenPoint(_position);
+    
     glm::mat4 model(1.0f);
-    model = glm::translate(model, _position + _positionShift);
+    model = glm::translate(model, glm::vec3(pos, 0.0f) + _positionShift);
     model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     _shader.setMat4("model", model);
     

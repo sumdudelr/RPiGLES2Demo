@@ -12,7 +12,7 @@ Camera::Camera(
     height_ = height;
     aspect_ = width_ / height_;
     
-    front_ = glm::vec3(0.0f, 0.0f, -1.0f);
+    front_ = glm::vec3(0.0f, 0.0f, 0.0f);
     zoom_ = 45.0f;
     nearClip_ = 0.1f;
     farClip_ = 100.0f;
@@ -26,24 +26,37 @@ Camera::Camera(
 }
 
 glm::mat4 Camera::getViewMatrix() {
-    return glm::lookAt(position_, position_ + front_, up_);
+    return glm::lookAt(position_, front_, up_);
 }
 
 glm::mat4 Camera::getProjectionMatrix() {
-    return glm::perspective(zoom_, aspect_, nearClip_, farClip_);
+    return glm::perspective(glm::radians(zoom_), aspect_, nearClip_, farClip_);
 }
 
 glm::mat4 Camera::getOrthoMatrix() {
-    return glm::ortho(-width_/2.0f, width_/2.0f, -height_/2.0f, height_/2.0f);
+    return glm::ortho(-width_ / 2.0f, width_ / 2.0f, -height_ / 2.0f, height_ / 2.0f);
 }
 
 void Camera::zoomToTarget(float radius) {
     float sin = std::sin(glm::radians(zoom_) * 0.5f);
-    float distance = radius / sin;
+    float hypotDistance = radius / sin;
+    position_ = glm::vec3(hypotDistance) * glm::normalize(position_);
     
-    position_ = glm::vec3(distance) * glm::normalize(position_);
-    nearClip_ = distance - radius  * 2;
-    farClip_ = distance + radius * 2;
+    float tan = std::tan(glm::radians(zoom_) * 0.5f);
+    float distance = radius / tan;
+    nearClip_ = distance - (radius * 2);
+    farClip_ = distance + (radius * 2);
+}
+
+glm::vec2 Camera::getScreenPoint(glm::vec3 point) {
+    // The clip-space coordinates as would be calculated in the vertex shader
+    glm::vec4 p(point, 1.0f);
+    glm::mat4 model(1.0f);
+    p = getProjectionMatrix() * getViewMatrix() * model * p;
+    
+    // Perform clipping
+    p = p / glm::vec4(p.w);
+    return glm::vec2(p.x * width_ / 2.0f, p.y * height_ / 2.0f);
 }
 
 void Camera::updateCameraVectors() {

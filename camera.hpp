@@ -27,9 +27,9 @@ public:
     Camera(
         float width = 800.0f,
         float height = 600.0f,
-        glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3 position = glm::vec3(0.0f, 0.0f, 1.0f),
         glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
-        float yaw = -90.0f,
+        float yaw = 0.0f,
         float pitch = 0.0f);
         
     // Returns view matrix calculated using Euler angles and the lookAt matrix
@@ -44,6 +44,9 @@ public:
     // Move the camera to have a certain object in view
     // Also adjusts the clip space to reasonable values for the new position
     void zoomToTarget(float radius);
+    
+    // Get the screen space coordinates for a point in the perspective projection
+    glm::vec2 getScreenPoint(glm::vec3 point);
     
 private:
     // Calculates the front vector from the camera's (updated) Euler angles
