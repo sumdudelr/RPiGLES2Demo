@@ -3,6 +3,7 @@
 
 #include "shader.hpp"
 #include "camera.hpp"
+#include "points.hpp"
 
 #include <vector>
 
@@ -16,8 +17,17 @@ public:
         // Coordinates in LLH
         glm::vec3 coordinates;
         
-        // Name string for the point
+        // Color for the point
+        glm::vec3 pointColor;
+        
+        // Size for the point (pixels)
+        float pointSize;
+        
+        // Name string for the point -- No label if NULL
         const char* name;
+        
+        // Text color
+        glm::vec3 textColor;
     };
     
     Label();
@@ -44,6 +54,7 @@ private:
     };
     
     std::vector<P> _points;
+    Points _ppoints;
 
     Shader _shader;
     GLuint _buffers[2];

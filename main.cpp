@@ -19,27 +19,27 @@ int main() {
     std::signal(SIGINT, signal_handler);
     
     // Points and labels
-    std::vector<Label::Point> ps = {
-        {
-            glm::vec3(glm::radians(82.0f), glm::radians(-39.0f), 1500000.0f),
-            "Athens, OH"
-        },
-        {
-            glm::vec3(glm::radians(118.0f), glm::radians(-34.0f), 1500000.0f),
-            "Los Angeles, CA"
-        }
-    };
-    
-    std::vector<Points::Point> pp = {
+    std::vector<Label::Point> pp = {
         {
             glm::vec3(glm::radians(82.0f), glm::radians(-39.0f), 1500000.0f),
             glm::vec3(1.0f, 1.0f, 0.0f),
-            5.0f
+            5.0f,
+            "Athens, OH",
+            glm::vec3(1.0f, 1.0f, 1.0f)
         },
         {
             glm::vec3(glm::radians(118.0f), glm::radians(-34.0f), 1500000.0f),
             glm::vec3(1.0f, 0.0f, 1.0f),
-            5.0f
+            5.0f,
+            "Los Angeles, CA",
+            glm::vec3(1.0f, 1.0f, 1.0f)
+        },
+        {
+            glm::vec3(glm::radians(84.5f), glm::radians(-39.1f), 1000.0f),
+            glm::vec3(0.0f, 1.0f, 0.0f),
+            5.0f,
+            nullptr,
+            glm::vec3(0.0f)
         }
     };
     
@@ -55,11 +55,8 @@ int main() {
     Lines lines;
     lines.init(&camera);
     
-    Points points;
-    points.init(&camera, pp);
-    
     Label label;
-    label.init(&camera, ps);
+    label.init(&camera, pp);
     
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -75,7 +72,6 @@ int main() {
         
         globe.render();
         lines.render();
-        points.render();
         label.render();
         render.updateScreen();
         
