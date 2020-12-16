@@ -18,7 +18,7 @@ void Points::init(Camera* camera) {
     _points.push_back(start);
     _points.push_back(stop);
     
-    _shader.init("pointsV.glsl", "pointsF.glsl");
+    _shader.init("renderables/shaders/pointsV.glsl", "renderables/shaders/pointsF.glsl");
     
     // Generate buffer
     glGenBuffers(1, &_buffer);

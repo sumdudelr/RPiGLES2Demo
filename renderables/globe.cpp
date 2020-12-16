@@ -22,7 +22,7 @@ void Globe::init(Camera* camera) {
     
     _position = glm::vec3(0.0f, 0.0f, 0.0f);
     _mesh = EllipseTessellator(6);
-    _shader.init("globeV.glsl", "globeF.glsl");
+    _shader.init("renderables/shaders/globeV.glsl", "renderables/shaders/globeF.glsl");
     
     // Generate buffers
     glGenBuffers(2, &_buffers[0]);
@@ -48,7 +48,7 @@ void Globe::init(Camera* camera) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     // Load image
     int oWidth, oHeight, nrChannels;
-    unsigned char* data = stbi_load("NE2_50M_SR_W_4096.jpg", &oWidth, &oHeight, &nrChannels, 0);
+    unsigned char* data = stbi_load("data/NE2_50M_SR_W_4096.jpg", &oWidth, &oHeight, &nrChannels, 0);
     // Scale the image down
     int nWidth = 1080;
     int nHeight = 720;

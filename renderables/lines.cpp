@@ -38,7 +38,7 @@ void Lines::init(Camera* camera) {
     }
     _curvePositions.push_back(stop);
      
-     _shader.init("linesV.glsl", "linesF.glsl");
+     _shader.init("renderables/shaders/linesV.glsl", "renderables/shaders/linesF.glsl");
      
      // Generate buffers
      glGenBuffers(1, &_buffers[0]);

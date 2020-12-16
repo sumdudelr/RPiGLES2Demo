@@ -100,7 +100,7 @@ void Label::init(Camera* camera, std::vector<Point> points) {
         _points.push_back(p);
     }
     
-    _shader.init("labelV.glsl", "labelF.glsl");
+    _shader.init("renderables/shaders/labelV.glsl", "renderables/shaders/labelF.glsl");
     
     // Generate buffers
     glGenBuffers(1, &_buffers[0]);
