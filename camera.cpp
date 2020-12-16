@@ -1,5 +1,8 @@
 #include "camera.hpp"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/rotate_vector.hpp>
+
 Camera::Camera(
     float width,
     float height,
@@ -46,6 +49,10 @@ void Camera::zoomToTarget(float radius) {
     float distance = radius / tan;
     nearClip_ = distance - (radius * 2);
     farClip_ = distance + (radius * 2);
+}
+
+void Camera::rotateAroundZ(float angle) {
+    position_ = glm::rotateZ(position_, glm::radians(angle));
 }
 
 glm::vec2 Camera::getScreenPoint(glm::vec3 point) {

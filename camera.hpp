@@ -45,6 +45,9 @@ public:
     // Also adjusts the clip space to reasonable values for the new position
     void zoomToTarget(float radius);
     
+    // Rotate around the target point
+    void rotateAroundZ(float angle);
+    
     // Get the screen space coordinates for a point in the perspective projection
     glm::vec2 getScreenPoint(glm::vec3 point);
     

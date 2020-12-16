@@ -7,5 +7,7 @@ void main()
 {
 
     vec3 textColor = vec3(1.0, 1.0, 1.0); // white
-    gl_FragColor = vec4(textColor * texture2D(texture, TexCoord).aaa, 1.0);
+    float text = texture2D(texture, TexCoord).a;
+    float alpha = text + 0.75;
+    gl_FragColor = vec4(textColor * vec3(text), alpha);
 }

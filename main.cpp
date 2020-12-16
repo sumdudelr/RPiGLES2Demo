@@ -18,6 +18,18 @@ int main() {
     // Set up a signal handler for program exit
     std::signal(SIGINT, signal_handler);
     
+    // Points and labels
+    std::vector<Point> ps = {
+        {
+            glm::vec3(glm::radians(82.0f), glm::radians(-39.0f), 1500000.0f),
+            "Athens, OH"
+        },
+        {
+            glm::vec3(glm::radians(118.0f), glm::radians(-34.0f), 1500000.0f),
+            "Los Angeles, CA"
+        }
+    };
+    
     Renderer render;
     render.initialize();
     
@@ -34,13 +46,19 @@ int main() {
     points.init(&camera);
     
     Label label;
-    label.init(&camera);
+    label.init(&camera, ps);
     
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
     do {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        // Rotate the camera around the globe
+        camera.rotateAroundZ(0.3f);
         
         globe.render();
         lines.render();

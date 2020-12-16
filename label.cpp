@@ -14,13 +14,10 @@ Label::~Label() {
     glDeleteBuffers(2, &_buffers[0]);
 }
 
-void Label::init(Camera* camera) {
+void Label::init(Camera* camera, std::vector<Point> points) {
     _camera = camera;
     
-    _position = glm::vec3(glm::radians(82.0f), glm::radians(-39.0f), 1500000.0f);
-    _position = GeodeticToCart(_position);
-    
-    // Generate text for point labels
+    // Generate bitmap texture for font
     unsigned char temp_bitmap[512*512];
     stbtt_bakedchar cdata[96];
     std::ifstream ttf("/usr/share/fonts/truetype/quicksand/Quicksand-Regular.ttf");
@@ -33,66 +30,75 @@ void Label::init(Camera* camera) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 512, 512, 0, GL_ALPHA, GL_UNSIGNED_BYTE, temp_bitmap);
     
-    float minX = 0.0f, minY = 0.0f, maxX = 0.0f, maxY = 0.0f; // Keep track of the overall bounds
-    float x = 0.0f, y = 0.0f;
-    char message[] = "Athens, OH";
-    char* text = &message[0];
-    while (*text) {
-        if (*text >= 32 && *text < 128) {
-            /* This stbtt function is producing quads which aren't supported in
-             * OpenGL ES. The workaround for this is to generate the correct
-             * indices to construct the quads out of triangles. The function
-             * produces x,y coordinates with origin at top left and units of
-             * pixels. The rendering will be done with orthographic projection
-             * so that the text is always the same size.
-             */
-            stbtt_aligned_quad q;
-            stbtt_GetBakedQuad(cdata, 512, 512, *text-32, &x, &y, &q, 1);
-            
-            minX = std::min(minX, q.x0);
-            minY = std::min(minY, q.y0);
-            maxX = std::max(maxX, q.x1);
-            maxY = std::max(maxY, q.y1);
-            
-            Attrib a0 = {glm::vec2(q.x0, q.y0), glm::vec2(q.s0, q.t0)}; // top left -- 0
-            Attrib a1 = {glm::vec2(q.x1, q.y0), glm::vec2(q.s1, q.t0)}; // top right -- 1
-            Attrib a2 = {glm::vec2(q.x1, q.y1), glm::vec2(q.s1, q.t1)}; // bottom right -- 2
-            Attrib a3 = {glm::vec2(q.x0, q.y1), glm::vec2(q.s0, q.t1)}; // bottom left -- 3
-            
-            // first triangle
-            _vertices.push_back(a0);
-            _vertices.push_back(a1);
-            _vertices.push_back(a3);
-            // second triangle
-            _vertices.push_back(a2);
-            _vertices.push_back(a3);
-            _vertices.push_back(a1);
+    // Process points
+    for (const auto& point : points) {
+        P p;
+        p.position = GeodeticToCart(point.coordinates);
+        p.numCharAttrib = 0;
+        
+        // Keep track of the overall bounds
+        float minX = 0.0f, minY = 0.0f, maxX = 0.0f, maxY = 0.0f;
+        float x = 0.0f, y = 0.0f;
+        const char* text = &point.name[0];
+        while (*text) {
+            if (*text >= 32 && *text < 128) {
+                /* This stbtt function is producing quads which aren't supported in
+                 * OpenGL ES. The workaround for this is to generate the correct
+                 * indices to construct the quads out of triangles. The function
+                 * produces x,y coordinates with origin at top left and units of
+                 * pixels. The rendering will be done with orthographic projection
+                 * so that the text is always the same size.
+                 */
+                stbtt_aligned_quad q;
+                stbtt_GetBakedQuad(cdata, 512, 512, *text-32, &x, &y, &q, 1);
+                 
+                minX = std::min(minX, q.x0);
+                minY = std::min(minY, q.y0);
+                maxX = std::max(maxX, q.x1);
+                maxY = std::max(maxY, q.y1);
+                 
+                Attrib tl = {glm::vec2(q.x0, q.y0), glm::vec2(q.s0, q.t0)};
+                Attrib tr = {glm::vec2(q.x1, q.y0), glm::vec2(q.s1, q.t0)};
+                Attrib br = {glm::vec2(q.x1, q.y1), glm::vec2(q.s1, q.t1)};
+                Attrib bl = {glm::vec2(q.x0, q.y1), glm::vec2(q.s0, q.t1)};
+                
+                // first triangle
+                _vertices.push_back(tl);
+                _vertices.push_back(tr);
+                _vertices.push_back(bl);
+                // second triangle
+                _vertices.push_back(br);
+                _vertices.push_back(bl);
+                _vertices.push_back(tr);
+                
+                // Keep track of the number of elements added to attribute buffer
+                p.numCharAttrib += 6;
+            }
+            ++text;
         }
-        ++text;
+        float width = (maxX - minX) / 2.0f;
+        float height = (maxY - minY) / 2.0f;
+        
+        // Shift so the middle is 40 px above 0,0
+        p.shift = glm::vec2(-width, -height + 40.0f);
+        
+        // Create a box to surround the text
+        Attrib topLeft = {glm::vec2(minX, minY), glm::vec2(0.0f, 0.1f)};
+        Attrib topRight = {glm::vec2(maxX, minY), glm::vec2(0.0f, 0.1f)};
+        Attrib botRight = {glm::vec2(maxX, maxY), glm::vec2(0.0f, 0.1f)};
+        Attrib botLeft = {glm::vec2(minX, maxY), glm::vec2(0.0f, 0.1f)};
+        // first triangle
+        _vertices.push_back(topLeft);
+        _vertices.push_back(topRight);
+        _vertices.push_back(botLeft);
+        // second triangle
+        _vertices.push_back(botRight);
+        _vertices.push_back(botLeft);
+        _vertices.push_back(topRight);
+        
+        // Add the point to vector
+        _points.push_back(p);
     }
-    
-    // Record the current size of attributes buffer (all characters)
-    _numCharAttrib = _vertices.size();
-    
-    float width = (maxX - minX) / 2.0f;
-    float height = (maxY - minY) / 2.0f;
-    
-    // Shift so the middle is 20 px above 0,0
-    _positionShift = glm::vec3(-width, -height + 20.0f, 0.0f);
-    
-    // Create a box to surround the text
-    Attrib topLeft = {glm::vec2(minX, minY), glm::vec2(0.0f, 0.1f)};
-    Attrib topRight = {glm::vec2(maxX, minY), glm::vec2(0.0f, 0.1f)};
-    Attrib botRight = {glm::vec2(maxX, maxY), glm::vec2(0.0f, 0.1f)};
-    Attrib botLeft = {glm::vec2(minX, maxY), glm::vec2(0.0f, 0.1f)};
-    // first triangle
-    _vertices.push_back(topLeft);
-    _vertices.push_back(topRight);
-    _vertices.push_back(botLeft);
-    // second triangle
-    _vertices.push_back(botRight);
-    _vertices.push_back(botLeft);
-    _vertices.push_back(topRight);
     
     _shader.init("labelV.glsl", "labelF.glsl");
     
@@ -104,8 +110,6 @@ void Label::init(Camera* camera) {
     
     _vertLoc = glGetAttribLocation(_shader.ID, "Vert");
     _texcLoc = glGetAttribLocation(_shader.ID, "Texc");
-    
-    _angle = 0.0f;
 }
 
 void Label::render() {
@@ -118,14 +122,6 @@ void Label::render() {
     glm::mat4 projection = _camera->getOrthoMatrix();
     _shader.setMat4("projection", projection);
     
-    // Get clip-space coordianates of perspective point (should probably do this in shader)
-    glm::vec2 pos = _camera->getScreenPoint(_position);
-    
-    glm::mat4 model(1.0f);
-    model = glm::translate(model, glm::vec3(pos, 0.0f) + _positionShift);
-    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    _shader.setMat4("model", model);
-    
     // Position attribute
     glEnableVertexAttribArray(_vertLoc);
     glBindBuffer(GL_ARRAY_BUFFER, _buffers[0]);
@@ -136,11 +132,24 @@ void Label::render() {
     glBindBuffer(GL_ARRAY_BUFFER, _buffers[0]);
     glVertexAttribPointer(_texcLoc, 2, GL_FLOAT, GL_FALSE, sizeof(Attrib), (void*)sizeof(glm::vec2));
     
-    _shader.setBool("isBox", false);
-    glDrawArrays(GL_TRIANGLES, 0, _numCharAttrib);
-    
-    _shader.setBool("isBox", true);
-    glDrawArrays(GL_TRIANGLES, _numCharAttrib, 6);
+    int index = 0;
+    for (const auto& p : _points) {
+        // Get clip-space coordianates of perspective point
+        glm::vec2 pos = _camera->getScreenPoint(p.position);
+        
+        glm::mat4 model(1.0f);
+        model = glm::translate(model, glm::vec3(pos + p.shift, 0.0f));
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        _shader.setMat4("model", model);
+        
+        _shader.setBool("isBox", false);
+        glDrawArrays(GL_TRIANGLES, index, p.numCharAttrib);
+        
+        _shader.setBool("isBox", true);
+        glDrawArrays(GL_TRIANGLES, index + p.numCharAttrib, 6);
+        
+        index += p.numCharAttrib + 6;
+    }
     
     glDisableVertexAttribArray(_vertLoc);
     glDisableVertexAttribArray(_texcLoc);
