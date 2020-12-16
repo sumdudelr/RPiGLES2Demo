@@ -9,17 +9,17 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
-// Use this struct to pass coordinates and their corresponding name
-struct Point {
-    // Coordinates in LLH
-    glm::vec3 coordinates;
-    
-    // Name string for the point
-    const char* name;
-};
-
 class Label {
 public:
+    // Use this struct to pass coordinates and their corresponding name
+    struct Point {
+        // Coordinates in LLH
+        glm::vec3 coordinates;
+        
+        // Name string for the point
+        const char* name;
+    };
+    
     Label();
     ~Label();
     void init(Camera* camera, std::vector<Point> points);

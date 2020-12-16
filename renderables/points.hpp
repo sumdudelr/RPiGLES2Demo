@@ -10,9 +10,21 @@
 
 class Points {
 public:
+    // Use this struct to pass coordinates and their corresponding color
+    struct Point {
+        // Coordinates in LLH
+        glm::vec3 coordinates;
+        
+        // Color for the point
+        glm::vec3 color;
+        
+        // Size for the point (pixels)
+        float size;
+    };
+    
     Points();
     ~Points();
-    void init(Camera* camera);
+    void init(Camera* camera, std::vector<Point> points);
     void render();
     
 private:
@@ -21,10 +33,10 @@ private:
     
     // Attribute locations
     GLint _vertLoc;
+    GLint _colorLoc;
+    GLint _sizeLoc;
     
-    std::vector<glm::vec3> _points;
-    
-    float _angle;
+    std::vector<Point> _points;
     
     // Pointer to shared camera
     Camera* _camera;

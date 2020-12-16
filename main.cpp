@@ -19,7 +19,7 @@ int main() {
     std::signal(SIGINT, signal_handler);
     
     // Points and labels
-    std::vector<Point> ps = {
+    std::vector<Label::Point> ps = {
         {
             glm::vec3(glm::radians(82.0f), glm::radians(-39.0f), 1500000.0f),
             "Athens, OH"
@@ -27,6 +27,19 @@ int main() {
         {
             glm::vec3(glm::radians(118.0f), glm::radians(-34.0f), 1500000.0f),
             "Los Angeles, CA"
+        }
+    };
+    
+    std::vector<Points::Point> pp = {
+        {
+            glm::vec3(glm::radians(82.0f), glm::radians(-39.0f), 1500000.0f),
+            glm::vec3(1.0f, 1.0f, 0.0f),
+            5.0f
+        },
+        {
+            glm::vec3(glm::radians(118.0f), glm::radians(-34.0f), 1500000.0f),
+            glm::vec3(1.0f, 0.0f, 1.0f),
+            5.0f
         }
     };
     
@@ -43,7 +56,7 @@ int main() {
     lines.init(&camera);
     
     Points points;
-    points.init(&camera);
+    points.init(&camera, pp);
     
     Label label;
     label.init(&camera, ps);

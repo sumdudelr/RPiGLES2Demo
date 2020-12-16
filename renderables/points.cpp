@@ -7,16 +7,14 @@ Points::~Points() {
     glDeleteBuffers(1, &_buffer);
 }
 
-void Points::init(Camera* camera) {
+void Points::init(Camera* camera, std::vector<Point> points) {
     _camera = camera;
     
-    glm::vec3 start(glm::radians(82.0f), glm::radians(-39.0f), 1500000.0f);
-    start = GeodeticToCart(start);
-    glm::vec3 stop(glm::radians(118.0f), glm::radians(-34.0f), 1500000.0f);
-    stop = GeodeticToCart(stop);
+    _points = points;
     
-    _points.push_back(start);
-    _points.push_back(stop);
+    for (auto& p : _points) {
+        p.coordinates = GeodeticToCart(p.coordinates);
+    }
     
     _shader.init("renderables/shaders/pointsV.glsl", "renderables/shaders/pointsF.glsl");
     
@@ -24,17 +22,15 @@ void Points::init(Camera* camera) {
     glGenBuffers(1, &_buffer);
     // Vertex buffer
     glBindBuffer(GL_ARRAY_BUFFER, _buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)*_points.size(), &_points[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Point)*_points.size(), &_points[0], GL_STATIC_DRAW);
     
     // Get attribute locations
     _vertLoc = glGetAttribLocation(_shader.ID, "Vert");
-    
-    _angle = 0.0f;
+    _colorLoc = glGetAttribLocation(_shader.ID, "Color");
+    _sizeLoc = glGetAttribLocation(_shader.ID, "Size");
 }
 
 void Points::render() {
-    //~ _angle += 0.2f;
-    
     _shader.use();
     
     glm::mat4 projection = _camera->getProjectionMatrix();
@@ -44,17 +40,26 @@ void Points::render() {
     _shader.setMat4("view", view);
     
     glm::mat4 model(1.0f);
-    //model = glm::translate(model, _position);
-    //~ model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(_angle), glm::vec3(0.0f, 0.0f, 1.0f));
     _shader.setMat4("model", model);
     
     // Position attribute
     glEnableVertexAttribArray(_vertLoc);
     glBindBuffer(GL_ARRAY_BUFFER, _buffer);
-    glVertexAttribPointer(_vertLoc, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+    glVertexAttribPointer(_vertLoc, 3, GL_FLOAT, GL_FALSE, sizeof(Point), (void*)0);
+    
+    // Color attribute
+    glEnableVertexAttribArray(_colorLoc);
+    glBindBuffer(GL_ARRAY_BUFFER, _buffer);
+    glVertexAttribPointer(_colorLoc, 3, GL_FLOAT, GL_FALSE, sizeof(Point), (void*)sizeof(glm::vec3));
+    
+    // Size attribute
+    glEnableVertexAttribArray(_sizeLoc);
+    glBindBuffer(GL_ARRAY_BUFFER, _buffer);
+    glVertexAttribPointer(_sizeLoc, 1, GL_FLOAT, GL_FALSE, sizeof(Point), (void*)(sizeof(glm::vec3) + sizeof(glm::vec3)));
     
     glDrawArrays(GL_POINTS, 0, _points.size());
     
     glDisableVertexAttribArray(_vertLoc);
+    glDisableVertexAttribArray(_colorLoc);
+    glDisableVertexAttribArray(_sizeLoc);
 }
