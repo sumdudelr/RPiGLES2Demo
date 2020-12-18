@@ -21,8 +21,8 @@ int NumberOfTriangles(int numberOfSubdivisions) {
 }
 
 glm::vec2 ComputeTextureCoordinate(glm::vec3 position) {
-    glm::vec2 coord(-std::atan2(position.y, position.x) / (M_PI*2) + 0.5f,
-        std::asin(position.z) / M_PI + 0.5f);
+    glm::vec2 coord(std::atan2(position.y, position.x) / (M_PI*2) + 0.5f,
+        -std::asin(position.z) / M_PI + 0.5f);
         
     return coord;
 }

@@ -22,21 +22,21 @@ int main() {
     // Points and labels
     std::vector<Label::Point> pp = {
         {
-            glm::vec3(glm::radians(82.0f), glm::radians(-39.0f), 1500000.0f),
+            glm::vec3(glm::radians(-82.0f), glm::radians(39.0f), 1500000.0f),
             glm::vec3(1.0f, 1.0f, 0.0f),
             5.0f,
             "Athens, OH",
             glm::vec3(1.0f, 1.0f, 1.0f)
         },
         {
-            glm::vec3(glm::radians(118.0f), glm::radians(-34.0f), 1500000.0f),
+            glm::vec3(glm::radians(-118.0f), glm::radians(34.0f), 1500000.0f),
             glm::vec3(1.0f, 0.0f, 1.0f),
             5.0f,
             "Los Angeles, CA",
             glm::vec3(1.0f, 1.0f, 1.0f)
         },
         {
-            glm::vec3(glm::radians(84.5f), glm::radians(-39.1f), 1000.0f),
+            glm::vec3(glm::radians(-84.5f), glm::radians(39.1f), 1000.0f),
             glm::vec3(0.0f, 1.0f, 0.0f),
             5.0f,
             nullptr,
@@ -48,8 +48,8 @@ int main() {
     std::vector<Lines::Line> curves = {
         {
             GeodeticCurve(
-                glm::vec3(glm::radians(82.0f), glm::radians(-39.0f), 1500000.0f),
-                glm::vec3(glm::radians(118.0f), glm::radians(-34.0f), 1500000.0f),
+                glm::vec3(glm::radians(-82.0f), glm::radians(39.0f), 1500000.0f),
+                glm::vec3(glm::radians(-118.0f), glm::radians(34.0f), 1500000.0f),
                 1.0f),
             glm::vec3(1.0f, 0.0f, 0.0f),
             3.0f
@@ -59,7 +59,7 @@ int main() {
     Renderer render;
     render.initialize();
     
-    Camera camera((float)render.screen_wid_, (float)render.screen_hei_, glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+    Camera camera((float)render.screen_wid_, (float)render.screen_hei_, glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     camera.zoomToTarget(6378137.0f * 1.25f);
     
     Globe globe;
