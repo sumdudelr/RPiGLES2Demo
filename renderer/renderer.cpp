@@ -89,6 +89,11 @@ void Renderer::initialize() {
     dispman_display_ = vc_dispmanx_display_open(0);
     dispman_update = vc_dispmanx_update_start(0);
     
+    VC_DISPMANX_ALPHA_T alpha;
+    alpha.flags = DISPMANX_FLAGS_ALPHA_DISCARD_LOWER_LAYERS;
+    alpha.opacity = 0xFF;
+    alpha.mask = 0;
+    
     dispman_element_ = vc_dispmanx_element_add(
         dispman_update,
         dispman_display_,
@@ -97,7 +102,7 @@ void Renderer::initialize() {
         0,                  // Src
         &src_rect,
         DISPMANX_PROTECTION_NONE,
-        0,                  // Alpha
+        &alpha,                  // Alpha
         0,                  // Clamp
         (DISPMANX_TRANSFORM_T)0); // Transform
         

@@ -19,11 +19,6 @@ float LightIntensity(vec3 normal, vec3 lightPos, vec3 fragPos)
     return diffuse + specular + ambient;
 }
 
-vec2 ComputeTextureCoordinates(vec3 normal)
-{
-    return vec2(-atan(normal.y, normal.x) * (1.0/(2.0*radians(180.0))) + 0.5, asin(normal.z) * (1.0/radians(180.0)) + 0.5);
-}
-
 void main()
 {
     vec3 lightIntensity = vec3(LightIntensity(Normal, lightPos, FragPos));

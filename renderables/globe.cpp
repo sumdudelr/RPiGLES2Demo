@@ -50,8 +50,8 @@ void Globe::init(Camera* camera) {
     int oWidth, oHeight, nrChannels;
     unsigned char* data = stbi_load("data/NE2_50M_SR_W_4096.jpg", &oWidth, &oHeight, &nrChannels, 0);
     // Scale the image down
-    int nWidth = 1080;
-    int nHeight = 720;
+    int nWidth = 1024;
+    int nHeight = 1024;
     unsigned char data2[nWidth*nHeight*nrChannels];
     stbir_resize_uint8(data, oWidth, oHeight, 0, &data2[0], nWidth, nHeight, 0, nrChannels);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, nWidth, nHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
