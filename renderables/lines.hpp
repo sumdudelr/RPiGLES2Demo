@@ -10,7 +10,7 @@ class Lines {
 public:
     Lines();
     ~Lines();
-    void init(Camera* camera);
+    void init(Camera* camera, std::vector<glm::vec3> points);
     void render();
     
 private:
@@ -21,8 +21,6 @@ private:
     GLint _vertLoc;
     
     std::vector<glm::vec3> _curvePositions;
-    
-    float _angle;
     
     // Pointer to shared camera
     Camera* _camera;
