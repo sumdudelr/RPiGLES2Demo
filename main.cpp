@@ -45,10 +45,12 @@ int main() {
     };
     
     // Compute geodetic curve
-    std::vector<glm::vec3> curve = GeodeticCurve(
-        glm::vec3(glm::radians(82.0f), glm::radians(-39.0f), 1500000.0f),
-        glm::vec3(glm::radians(118.0f), glm::radians(-34.0f), 1500000.0f),
-        1.0f);
+    std::vector<std::vector<glm::vec3>> curves = {
+        GeodeticCurve(
+            glm::vec3(glm::radians(82.0f), glm::radians(-39.0f), 1500000.0f),
+            glm::vec3(glm::radians(118.0f), glm::radians(-34.0f), 1500000.0f),
+            1.0f)
+    };
     
     Renderer render;
     render.initialize();
@@ -60,7 +62,7 @@ int main() {
     globe.init(&camera);
     
     Lines lines;
-    lines.init(&camera, curve);
+    lines.init(&camera, curves);
     
     Label label;
     label.init(&camera, pp);
