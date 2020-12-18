@@ -8,9 +8,21 @@
 
 class Lines {
 public:
+    // Use this struct to pass information about a line
+    struct Line {
+        // Vector of points that make up the line (in ECEF)
+        std::vector<glm::vec3> points;
+        
+        // Color of the line
+        glm::vec3 color;
+        
+        // Width of the line (pixels)
+        float width;
+    };
+
     Lines();
     ~Lines();
-    void init(Camera* camera, std::vector<std::vector<glm::vec3>> points);
+    void init(Camera* camera, std::vector<Line> lines);
     void render();
     
 private:
@@ -20,7 +32,7 @@ private:
     // Attribute locations
     GLint _vertLoc;
     
-    std::vector<std::vector<glm::vec3>> _curvePositions;
+    std::vector<Line> _curvePositions;
     
     // Pointer to shared camera
     Camera* _camera;

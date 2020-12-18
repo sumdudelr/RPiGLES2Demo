@@ -11,10 +11,10 @@ Lines::~Lines() {
     glDeleteBuffers(1, &_buffers[0]);
 }
 
-void Lines::init(Camera* camera, std::vector<std::vector<glm::vec3>> points) {
+void Lines::init(Camera* camera, std::vector<Line> lines) {
     _camera = camera;
     
-    _curvePositions = points;
+    _curvePositions = lines;
      
      _shader.init("renderables/shaders/linesV.glsl", "renderables/shaders/linesF.glsl");
      
@@ -24,14 +24,11 @@ void Lines::init(Camera* camera, std::vector<std::vector<glm::vec3>> points) {
      for (size_t i = 0; i < _buffers.size(); i++) {
          // Vertex buffer
          glBindBuffer(GL_ARRAY_BUFFER, _buffers[i]);
-         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)*_curvePositions[i].size(), &_curvePositions[i][0], GL_STATIC_DRAW);
+         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)*_curvePositions[i].points.size(), &_curvePositions[i].points[0], GL_STATIC_DRAW);
      }
      
      // Get attribute locations
      _vertLoc = glGetAttribLocation(_shader.ID, "Vert");
-     
-     // Set the line width
-     glLineWidth(3.0f);
 }
 
 void Lines::render() {
@@ -47,12 +44,18 @@ void Lines::render() {
     _shader.setMat4("model", model);
     
     for (size_t i= 0; i < _buffers.size(); i++) {
+        // Set color
+        _shader.setVec3("color", _curvePositions[i].color);
+        
+        // Set line width
+        glLineWidth(_curvePositions[i].width);
+        
         // Position attribute
         glEnableVertexAttribArray(_vertLoc);
         glBindBuffer(GL_ARRAY_BUFFER, _buffers[i]);
         glVertexAttribPointer(_vertLoc, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
         
-        glDrawArrays(GL_LINE_STRIP, 0, _curvePositions[i].size());
+        glDrawArrays(GL_LINE_STRIP, 0, _curvePositions[i].points.size());
         
         glDisableVertexAttribArray(_vertLoc);
     }
