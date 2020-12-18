@@ -34,13 +34,9 @@ void Points::render() {
     _shader.use();
     
     glm::mat4 projection = _camera->getProjectionMatrix();
-    _shader.setMat4("projection", projection);
-    
     glm::mat4 view = _camera->getViewMatrix();
-    _shader.setMat4("view", view);
-    
-    glm::mat4 model(1.0f);
-    _shader.setMat4("model", model);
+    glm::mat4 mvp = projection * view;
+    _shader.setMat4("mvp", mvp);
     
     // Position attribute
     glEnableVertexAttribArray(_vertLoc);

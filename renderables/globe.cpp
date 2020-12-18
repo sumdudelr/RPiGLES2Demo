@@ -70,10 +70,8 @@ void Globe::render() {
     _shader.setInt("texture1", 0);
     
     glm::mat4 projection = _camera->getProjectionMatrix();
-    _shader.setMat4("projection", projection);
-    
     glm::mat4 view = _camera->getViewMatrix();
-    _shader.setMat4("view", view);
+    _shader.setMat4("vp", projection * view);
     
     glm::mat4 model(1.0f);
     model = glm::translate(model, _position);

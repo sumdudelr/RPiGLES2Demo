@@ -5,13 +5,11 @@ attribute float Size;
 
 varying vec3 color;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+uniform mat4 mvp;
 
 void main()
 {
     color = Color;
     gl_PointSize = Size;
-    gl_Position = projection * view * model * vec4(Vert, 1.0);
+    gl_Position = mvp * vec4(Vert, 1.0);
 }

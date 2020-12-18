@@ -136,7 +136,6 @@ void Label::render() {
     _shader.setInt("texture", 0);
     
     glm::mat4 projection = _camera->getOrthoMatrix();
-    _shader.setMat4("projection", projection);
     
     // Position attribute
     glEnableVertexAttribArray(_vertLoc);
@@ -156,7 +155,8 @@ void Label::render() {
         glm::mat4 model(1.0f);
         model = glm::translate(model, glm::vec3(pos + p.shift, 0.0f));
         model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        _shader.setMat4("model", model);
+        glm::mat4 mvp = projection * model;
+        _shader.setMat4("mvp", mvp);
         
         _shader.setBool("isBox", false);
         glDrawArrays(GL_TRIANGLES, index, p.numCharAttrib);
