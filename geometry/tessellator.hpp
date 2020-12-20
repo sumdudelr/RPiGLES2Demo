@@ -12,7 +12,6 @@
 struct Attributes {
     glm::vec3 positions;
     glm::vec3 normals;
-    glm::vec2 textureCoord;
 };
 
 struct Mesh {
@@ -22,7 +21,6 @@ struct Mesh {
 
 int NumberOfVertices(int numberOfSubdivisions);
 int NumberOfTriangles(int numberOfSubdivisions);
-glm::vec2 ComputeTextureCoordinate(glm::vec3 position);
 void Subdivide(Mesh& mesh, int t1, int t2, int t3, int level);
 Mesh EllipseTessellator(int numberOfSubdivisions);
 

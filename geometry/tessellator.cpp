@@ -20,13 +20,6 @@ int NumberOfTriangles(int numberOfSubdivisions) {
     return numberOfTriangles;
 }
 
-glm::vec2 ComputeTextureCoordinate(glm::vec3 position) {
-    glm::vec2 coord(std::atan2(position.y, position.x) / (M_PI*2) + 0.5f,
-        -std::asin(position.z) / M_PI + 0.5f);
-        
-    return coord;
-}
-
 void Subdivide(Mesh& mesh, int t1, int t2, int t3, int level) {
     // WGS-84
     glm::vec3 radii(6378137.0f, 6378137.0f, 6356752.314245f);
@@ -48,13 +41,9 @@ void Subdivide(Mesh& mesh, int t1, int t2, int t3, int level) {
         glm::vec3 d12 = glm::normalize(p12 * oneOverRadiiSquared);
         glm::vec3 d20 = glm::normalize(p20 * oneOverRadiiSquared);
         
-        glm::vec2 t01 = ComputeTextureCoordinate(d01);
-        glm::vec2 t12 = ComputeTextureCoordinate(d12);
-        glm::vec2 t20 = ComputeTextureCoordinate(d20);
-        
-        Attributes a01 = {p01, d01, t01};
-        Attributes a12 = {p12, d12, t12};
-        Attributes a20 = {p20, d20, t20};
+        Attributes a01 = {p01, d01};
+        Attributes a12 = {p12, d12};
+        Attributes a20 = {p20, d20};
         
         mesh.attributes.push_back(a01);
         mesh.attributes.push_back(a12);
@@ -114,15 +103,10 @@ Mesh EllipseTessellator(int numberOfSubdivisions) {
     glm::vec3 d2 = glm::normalize(p2 * oneOverRadiiSquared);
     glm::vec3 d3 = glm::normalize(p3 * oneOverRadiiSquared);
     
-    glm::vec2 t0 = ComputeTextureCoordinate(d0);
-    glm::vec2 t1 = ComputeTextureCoordinate(d1);
-    glm::vec2 t2 = ComputeTextureCoordinate(d2);
-    glm::vec2 t3 = ComputeTextureCoordinate(d3);
-    
-    Attributes a0 = {p0, d0, t0};
-    Attributes a1 = {p1, d1, t1};
-    Attributes a2 = {p2, d2, t2};
-    Attributes a3 = {p3, d3, t3};
+    Attributes a0 = {p0, d0};
+    Attributes a1 = {p1, d1};
+    Attributes a2 = {p2, d2};
+    Attributes a3 = {p3, d3};
     
     mesh.attributes.push_back(a0);
     mesh.attributes.push_back(a1);
