@@ -8,6 +8,9 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+// 16 byte header + 1024x1024x3 image w/ 6x compression
+#define TEXTURE_SIZE_BYTES 16+1024*1024*3/6
+
 Globe::Globe() {
     
 }
@@ -44,39 +47,31 @@ void Globe::init(Camera* camera) {
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    static const char* faces[] = {
+        "data/NE2_50M_SR_W_4096_front.pkm",
+        "data/NE2_50M_SR_W_4096_back.pkm",
+        "data/NE2_50M_SR_W_4096_right.pkm",
+        "data/NE2_50M_SR_W_4096_left.pkm",
+        "data/NE2_50M_SR_W_4096_top.pkm",
+        "data/NE2_50M_SR_W_4096_bottom.pkm"
+    };
+    
     // Load images
-    char header[16]; // pkm header
-    std::ifstream fin("data/NE2_50M_SR_W_4096_bottom.pkm", std::ios::in | std::ios::binary);
-    fin.read(header, 16);
-    char buffer[1024*1024*3/6];
-    fin.read(buffer, 1024*1024*3/6);
-    glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_ETC1_RGB8_OES, 1024, 1024, 0, 1024*1024*3/6, buffer);
-    fin.close();
-    fin.open("data/NE2_50M_SR_W_4096_top.pkm", std::ios::in | std::ios::binary);
-    fin.read(header, 16);
-    fin.read(buffer, 1024*1024*3/6);
-    glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_ETC1_RGB8_OES, 1024, 1024, 0, 1024*1024*3/6, buffer);
-    fin.close();
-    fin.open("data/NE2_50M_SR_W_4096_left.pkm", std::ios::in | std::ios::binary);
-    fin.read(header, 16);
-    fin.read(buffer, 1024*1024*3/6);
-    glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_ETC1_RGB8_OES, 1024, 1024, 0, 1024*1024*3/6, buffer);
-    fin.close();
-    fin.open("data/NE2_50M_SR_W_4096_right.pkm", std::ios::in | std::ios::binary);
-    fin.read(header, 16);
-    fin.read(buffer, 1024*1024*3/6);
-    glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_ETC1_RGB8_OES, 1024, 1024, 0, 1024*1024*3/6, buffer);
-    fin.close();
-    fin.open("data/NE2_50M_SR_W_4096_back.pkm", std::ios::in | std::ios::binary);
-    fin.read(header, 16);
-    fin.read(buffer, 1024*1024*3/6);
-    glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_ETC1_RGB8_OES, 1024, 1024, 0, 1024*1024*3/6, buffer);
-    fin.close();
-    fin.open("data/NE2_50M_SR_W_4096_front.pkm", std::ios::in | std::ios::binary);
-    fin.read(header, 16);
-    fin.read(buffer, 1024*1024*3/6);
-    glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_ETC1_RGB8_OES, 1024, 1024, 0, 1024*1024*3/6, buffer);
-    fin.close();
+    char buffer[TEXTURE_SIZE_BYTES]; 
+    for (uint i = 0; i < 6; i++) {
+        std::ifstream fin(faces[i], std::ios::in | std::ios::binary);
+        fin.read(buffer, TEXTURE_SIZE_BYTES);
+        glCompressedTexImage2D(
+            GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
+            0,
+            GL_ETC1_RGB8_OES,
+            1024,
+            1024,
+            0,
+            TEXTURE_SIZE_BYTES - 16,
+            &buffer[16]);
+    }
 }
 
 void Globe::render() {
