@@ -67,3 +67,72 @@ std::vector<glm::vec3> GeodeticCurve(glm::vec3 start, glm::vec3 stop, float gran
     
     return result;
 }
+
+double gstime(double jdut1) {
+    double tut1 = (jdut1 - 2451545.0) / 36525.0;
+    
+    double temp = -6.2e-6 * tut1 * tut1 + 0.093104 * tut1 * tut1
+        + (876600.0 * 3600.0 + 8640184.812866) * tut1 + 67310.54841;
+        
+    temp = std::remainder(glm::radians(temp)/240.0, 2*M_PI);
+    
+    if (temp < 0.0) temp = temp + 2 * M_PI;
+    
+    return temp;
+}
+
+glm::dmat3 polarm(double xp, double yp, double ttt) {
+    double cosxp = std::cos(xp);
+    double sinxp = std::sin(xp);
+    double cosyp = std::cos(yp);
+    double sinyp = std::sin(yp);
+    
+    double convrt = M_PI / (3600.0/180.0);
+    // approx. sp value in rad
+    double sp = -47.0e-6 * ttt * convrt;
+    double cossp = std::cos(sp);
+    double sinsp = std::sin(sp);
+    
+    glm::dmat3 result{
+        cosxp * cossp,
+        -cosyp * sinsp + sinyp * sinxp * cossp,
+        -sinyp * sinsp - cosyp * sinxp * cossp,
+        cosxp * sinsp,
+        cosyp * cossp + sinyp * sinxp * sinsp,
+        sinyp * cossp - cosyp * sinxp * sinsp,
+        sinxp,
+        -sinyp * cosxp,
+        cosyp * cosxp};
+        
+    return result;
+}
+
+glm::dvec3 teme2ecef(double rteme[3], double ttt, double jdut1, double xp, double yp) {
+    double gmst = gstime(jdut1); // find gmst
+    
+    // find omega from nutation theory
+    double omega = 125.04452222 + (-6962890.5390 * ttt +
+        7.455 * ttt * ttt + 0.008 * ttt * ttt * ttt) / 3600.0;
+    
+    omega = glm::radians(std::remainder(omega, 360.0));
+    
+    // find mean ast
+    double gmstg = gmst
+        + 0.00264*M_PI / (3600*180)*std::sin(omega)
+        + 0.000063*M_PI / (3600*180)*std::sin(2.0 * omega);
+    
+    gmstg = std::remainder(gmstg, 2.0*M_PI);
+    
+    glm::dmat3 st{
+        std::cos(gmstg), -std::sin(gmstg), 0.0,
+        std::sin(gmstg), std::cos(gmstg), 0.0,
+        0.0, 0.0, 1.0};
+        
+    glm::dmat3 pm = polarm(xp, yp, ttt);
+    
+    // might need to transpose st and pm
+    glm::dvec3 rpef = glm::transpose(st) * glm::dvec3(rteme[0], rteme[1], rteme[2]);
+    glm::dvec3 recef = glm::transpose(pm) * rpef;
+
+    return recef;
+}

@@ -13,4 +13,7 @@ glm::vec3 GeodeticToCart(glm::vec3 geodetic);
 
 std::vector<glm::vec3> GeodeticCurve(glm::vec3 start, glm::vec3 stop, float granularity);
 
+// Convert from TEME to ECEF
+glm::dvec3 teme2ecef(double rteme[3], double ttt, double jdut1, double xp, double yp);
+
 #endif

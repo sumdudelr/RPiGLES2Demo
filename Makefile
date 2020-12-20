@@ -28,6 +28,9 @@ tessellator.o: geometry/tessellator.cpp geometry/tessellator.hpp
 third_party.o: third_party/third_party.cpp third_party/stb_image.h third_party/stb_image_resize.h third_party/stb_truetype.h
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 	
+SGP4.o: third_party/SGP4.cpp third_party/SGP4.h
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
+	
 globe.o: renderables/globe.cpp renderables/globe.hpp renderer/renderer.hpp renderer/shader.hpp geometry/tessellator.hpp renderer/camera.hpp
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 	
@@ -40,8 +43,8 @@ points.o: renderables/points.cpp renderables/points.hpp geometry/ellipsoid.hpp r
 label.o: renderables/label.cpp renderables/label.hpp renderer/shader.hpp renderer/camera.hpp third_party/stb_truetype.h
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 
-gles_demo.out: main.cpp renderer.o camera.o shader.o ellipsoid.o tessellator.o globe.o lines.o points.o label.o third_party.o
-	$(AGCC) $(CXX_FLAG) $(INCLUDE) renderer.o shader.o ellipsoid.o camera.o tessellator.o third_party.o globe.o lines.o points.o label.o $< $(LIBRARY) -o $@
+gles_demo.out: main.cpp renderer.o camera.o shader.o ellipsoid.o tessellator.o globe.o lines.o points.o label.o third_party.o SGP4.o
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) renderer.o shader.o ellipsoid.o camera.o tessellator.o third_party.o globe.o lines.o points.o label.o SGP4.o $< $(LIBRARY) -o $@
 	
 clean:
 	rm -f $(TARGET) *.o *~

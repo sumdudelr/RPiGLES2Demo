@@ -8,6 +8,8 @@
 
 #include <csignal>
 
+#include "third_party/SGP4.h"
+
 static volatile int terminate;
 
 void signal_handler(int signal) {
@@ -56,6 +58,56 @@ int main() {
         }
     };
     
+    // Compute orbit from TLE
+    std::vector<glm::vec3> orbit;
+    char title[130]; char line1[130]; char line2[130];
+    std::ifstream file("BOBCAT-1.TLE");
+    file.getline(title, 130);
+    file.getline(line1, 130);
+    file.getline(line2, 130);
+    file.close();
+    double startmfe, stopmfe, deltamin;
+    elsetrec satrec;
+    SGP4Funcs::twoline2rv(line1, line2, 'c', 'e', 'a', wgs84, startmfe, stopmfe, deltamin, satrec);
+    double r[3], v[3];
+    double tsince = 0;
+    while (tsince < stopmfe / 20.0) {
+        SGP4Funcs::sgp4(satrec, tsince, r, v);
+        double jd = satrec.jdsatepoch;
+        double jdfrac = satrec.jdsatepochF + tsince/1440.0;
+        if (jdfrac < 0.0) {
+            jd = jd - 1.0;
+            jdfrac = jdfrac + 1.0;
+        }
+        
+        double conv = M_PI / (180.0*3600.0);
+        double lod = 0.0015563;
+        double xp = -0.140682 * conv;
+        double yp = 0.333309 * conv;
+        double dut1 = -0.4399619;
+        double jdut1 = jd;
+        double jdut1frac = jdfrac + dut1/86400.0;
+        double ttt = (jdut1-2451545.0)/36525.0;
+        double ddpsi = -0.056487 * conv;
+        double ddeps = -0.002100 * conv;
+        
+        glm::dvec3 ecef = teme2ecef(r, ttt, jdut1, xp, yp) * glm::dvec3(1000.0);
+        
+        orbit.push_back(ecef);
+        
+        tsince += deltamin / 10.0;
+    }
+    
+    std::vector<Lines::Line> ls =
+    {
+        {
+            orbit,
+            glm::vec3(1.0f, 0.0f, 0.0f),
+            3.0f
+        }
+    };
+            
+    
     Renderer render;
     render.initialize();
     
@@ -66,7 +118,7 @@ int main() {
     globe.init(&camera);
     
     Lines lines;
-    lines.init(&camera, curves);
+    lines.init(&camera, ls);
     
     Label label;
     label.init(&camera, pp);
