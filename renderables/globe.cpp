@@ -20,7 +20,6 @@ Globe::~Globe() {
 void Globe::init(Camera* camera) {
     _camera = camera;
     
-    _position = glm::vec3(0.0f, 0.0f, 0.0f);
     _mesh = EllipseTessellator(6);
     _shader.init("renderables/shaders/globeV.glsl", "renderables/shaders/globeF.glsl");
     
@@ -36,51 +35,63 @@ void Globe::init(Camera* camera) {
     // Get attribute locations
     _vertLoc = glGetAttribLocation(_shader.ID, "Vert");
     _normLoc = glGetAttribLocation(_shader.ID, "Norm");
-    _texcLoc = glGetAttribLocation(_shader.ID, "Texc");
     
-    // Set up texture
+    // Set up cube map texture
     glGenTextures(1, &_tex);
-    glBindTexture(GL_TEXTURE_2D, _tex);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, _tex);
     // Wrapping & filtering options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    // Load image
-    int oWidth, oHeight, nrChannels;
-    unsigned char* data = stbi_load("data/NE2_50M_SR_W_4096.jpg", &oWidth, &oHeight, &nrChannels, 0);
-    // Scale the image down
-    int nWidth = 1024;
-    int nHeight = 1024;
-    unsigned char data2[nWidth*nHeight*nrChannels];
-    stbir_resize_uint8(data, oWidth, oHeight, 0, &data2[0], nWidth, nHeight, 0, nrChannels);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, nWidth, nHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    
-    _angle = 0.0f;
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    // Load images
+    char header[16]; // pkm header
+    std::ifstream fin("data/NE2_50M_SR_W_4096_bottom.pkm", std::ios::in | std::ios::binary);
+    fin.read(header, 16);
+    char buffer[1024*1024*3/6];
+    fin.read(buffer, 1024*1024*3/6);
+    glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_ETC1_RGB8_OES, 1024, 1024, 0, 1024*1024*3/6, buffer);
+    fin.close();
+    fin.open("data/NE2_50M_SR_W_4096_top.pkm", std::ios::in | std::ios::binary);
+    fin.read(header, 16);
+    fin.read(buffer, 1024*1024*3/6);
+    glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_ETC1_RGB8_OES, 1024, 1024, 0, 1024*1024*3/6, buffer);
+    fin.close();
+    fin.open("data/NE2_50M_SR_W_4096_left.pkm", std::ios::in | std::ios::binary);
+    fin.read(header, 16);
+    fin.read(buffer, 1024*1024*3/6);
+    glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_ETC1_RGB8_OES, 1024, 1024, 0, 1024*1024*3/6, buffer);
+    fin.close();
+    fin.open("data/NE2_50M_SR_W_4096_right.pkm", std::ios::in | std::ios::binary);
+    fin.read(header, 16);
+    fin.read(buffer, 1024*1024*3/6);
+    glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_ETC1_RGB8_OES, 1024, 1024, 0, 1024*1024*3/6, buffer);
+    fin.close();
+    fin.open("data/NE2_50M_SR_W_4096_back.pkm", std::ios::in | std::ios::binary);
+    fin.read(header, 16);
+    fin.read(buffer, 1024*1024*3/6);
+    glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_ETC1_RGB8_OES, 1024, 1024, 0, 1024*1024*3/6, buffer);
+    fin.close();
+    fin.open("data/NE2_50M_SR_W_4096_front.pkm", std::ios::in | std::ios::binary);
+    fin.read(header, 16);
+    fin.read(buffer, 1024*1024*3/6);
+    glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_ETC1_RGB8_OES, 1024, 1024, 0, 1024*1024*3/6, buffer);
+    fin.close();
 }
 
 void Globe::render() {
-    //~ _angle += 0.2f;
-    
     _shader.use();
     
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, _tex);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, _tex);
     _shader.setInt("texture1", 0);
     
     glm::mat4 projection = _camera->getProjectionMatrix();
     glm::mat4 view = _camera->getViewMatrix();
     _shader.setMat4("vp", projection * view);
     
-    glm::mat4 model(1.0f);
-    model = glm::translate(model, _position);
-    //~ model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(_angle), glm::vec3(0.0f, 0.0f, 1.0f));
-    _shader.setMat4("model", model);
-    
     // Inverse transpose of model
-    glm::mat3 ipModel = glm::transpose(glm::inverse(model));
+    glm::mat3 ipModel = glm::transpose(glm::inverse(glm::mat4(1.0f)));
     _shader.setMat3("ipModel", ipModel);
     
     // Light position
@@ -97,15 +108,9 @@ void Globe::render() {
     glBindBuffer(GL_ARRAY_BUFFER, _buffers[1]);
     glVertexAttribPointer(_normLoc, 3, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)sizeof(glm::vec3));
     
-    // Texture coord attribute
-    glEnableVertexAttribArray(_texcLoc);
-    glBindBuffer(GL_ARRAY_BUFFER, _buffers[1]);
-    glVertexAttribPointer(_texcLoc, 2, GL_FLOAT, GL_FALSE, sizeof(Attributes), (void*)(sizeof(glm::vec3)+sizeof(glm::vec3)));
-    
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _buffers[0]);
     glDrawElements(GL_TRIANGLES, _mesh.indices.size(), GL_UNSIGNED_SHORT, (void*)0);
     
     glDisableVertexAttribArray(_vertLoc);
     glDisableVertexAttribArray(_normLoc);
-    glDisableVertexAttribArray(_texcLoc);
 }

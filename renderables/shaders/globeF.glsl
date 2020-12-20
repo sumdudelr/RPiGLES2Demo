@@ -4,7 +4,7 @@ varying vec3 Normal;
 varying vec2 TexCoord;
 
 uniform vec3 lightPos;
-uniform sampler2D texture1;
+uniform samplerCube texture1;
 uniform sampler2D texture2;
 
 float LightIntensity(vec3 normal, vec3 lightPos, vec3 fragPos)
@@ -22,7 +22,7 @@ float LightIntensity(vec3 normal, vec3 lightPos, vec3 fragPos)
 void main()
 {
     vec3 lightIntensity = vec3(LightIntensity(Normal, lightPos, FragPos));
-    gl_FragColor = texture2D(texture1, TexCoord) * vec4(lightIntensity, 1.0);
+    gl_FragColor = textureCube(texture1, Normal) * vec4(lightIntensity, 1.0);
     //~ gl_FragColor = texture2D(texture1, ComputeTextureCoordinates(Normal));
     //~ gl_FragColor = mix(texture2D(texture1, TexCoord), texture2D(texture2, TexCoord), 0.2);
     //~ gl_FragColor = texture2D(texture1, TexCoord);

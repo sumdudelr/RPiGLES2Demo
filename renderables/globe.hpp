@@ -22,13 +22,9 @@ private:
     // Attribute locations
     GLint _vertLoc;
     GLint _normLoc;
-    GLint _texcLoc;
     
     // Texture
     GLuint _tex;
-    
-    // Globe rotation angle
-    float _angle;
     
     // Pointer to shared camera
     Camera* _camera;
