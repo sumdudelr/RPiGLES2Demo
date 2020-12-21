@@ -95,14 +95,15 @@ glm::dmat3 polarm(double xp, double yp, double ttt) {
     
     glm::dmat3 result{
         cosxp * cossp,
-        -cosyp * sinsp + sinyp * sinxp * cossp,
-        -sinyp * sinsp - cosyp * sinxp * cossp,
         cosxp * sinsp,
-        cosyp * cossp + sinyp * sinxp * sinsp,
-        sinyp * cossp - cosyp * sinxp * sinsp,
         sinxp,
+        -cosyp * sinsp + sinyp * sinxp * cossp,
+        cosyp * cossp + sinyp * sinxp * sinsp,
         -sinyp * cosxp,
-        cosyp * cosxp};
+        -sinyp * sinsp - cosyp * sinxp * cossp,
+        sinyp * cossp - cosyp * sinxp * sinsp,
+        cosyp * cosxp
+    };
         
     return result;
 }
@@ -124,15 +125,22 @@ glm::dvec3 teme2ecef(double rteme[3], double ttt, double jdut1, double xp, doubl
     gmstg = std::remainder(gmstg, 2.0*M_PI);
     
     glm::dmat3 st{
-        std::cos(gmstg), -std::sin(gmstg), 0.0,
-        std::sin(gmstg), std::cos(gmstg), 0.0,
-        0.0, 0.0, 1.0};
+        std::cos(gmstg),
+        std::sin(gmstg),
+        0.0,
+        -std::sin(gmstg),
+        std::cos(gmstg),
+        0.0,
+        0.0,
+        0.0,
+        1.0
+    };
         
     glm::dmat3 pm = polarm(xp, yp, ttt);
     
     // might need to transpose st and pm
-    glm::dvec3 rpef = glm::transpose(st) * glm::dvec3(rteme[0], rteme[1], rteme[2]);
-    glm::dvec3 recef = glm::transpose(pm) * rpef;
+    glm::dvec3 rpef = st * glm::dvec3(rteme[0], rteme[1], rteme[2]);
+    glm::dvec3 recef = pm * rpef;
 
     return recef;
 }

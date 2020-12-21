@@ -1434,7 +1434,7 @@ namespace SGP4Funcs
 		#ifdef _MSC_VER
 						   strcpy_s(satrec.satnum, 6 * sizeof(char), satn);
 		#else
-						   strcpy(satrec.satnum, satn);
+						   //strncpy(satrec.satnum, satn, 6);
 		#endif
 
 		// sgp4fix - note the following variables are also passed directly via satrec.

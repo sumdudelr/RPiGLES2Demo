@@ -7,6 +7,8 @@
 #include "ellipsoid.hpp"
 
 #include <csignal>
+#include <ctime>
+#include <locale>
 
 #include "third_party/SGP4.h"
 
@@ -70,8 +72,34 @@ int main() {
     elsetrec satrec;
     SGP4Funcs::twoline2rv(line1, line2, 'c', 'e', 'a', wgs84, startmfe, stopmfe, deltamin, satrec);
     double r[3], v[3];
-    double tsince = 0;
-    while (tsince < stopmfe / 20.0) {
+    SGP4Funcs::sgp4(satrec, 0, r, v);
+
+    /* Convert Julian day to UTC
+     * The Julian epoch = Jan 1 
+     * The Julian date of any instant is the Julian day number plus the fraction
+     * of a day since the preceding noon in Universal Time.
+     */
+    int year, mon, day, hr, minute; double sec;
+    SGP4Funcs::invjday_SGP4(satrec.jdsatepoch, satrec.jdsatepochF, year, mon, day, hr, minute, sec);
+    std::tm jt{};
+    jt.tm_year = year - 1900;
+    jt.tm_mon = mon - 1;
+    jt.tm_mday = day;
+    jt.tm_hour = hr;
+    jt.tm_min = minute;
+    jt.tm_sec = (int)sec;
+    std::time_t epoch = timegm(&jt);
+    std::time_t current = std::time(nullptr);
+    double diff = std::difftime(current, epoch);
+    char buf[64];
+    strftime(buf, sizeof(buf), "%c %Z\n", std::gmtime(&epoch));
+    std::cout << "TLE epoch: " << buf;
+    strftime(buf, sizeof(buf), "%c %Z\n", std::gmtime(&current));
+    std::cout << "Current:   " << buf;
+    
+    double tsince = diff / 60.0; // start at the current time
+    stopmfe = tsince + 60.0; // stop 1 hour later
+    while (tsince < stopmfe) {
         SGP4Funcs::sgp4(satrec, tsince, r, v);
         double jd = satrec.jdsatepoch;
         double jdfrac = satrec.jdsatepochF + tsince/1440.0;
@@ -91,7 +119,7 @@ int main() {
         double ddpsi = -0.056487 * conv;
         double ddeps = -0.002100 * conv;
         
-        glm::dvec3 ecef = teme2ecef(r, ttt, jdut1, xp, yp) * glm::dvec3(1000.0);
+        glm::dvec3 ecef = teme2ecef(r, ttt, jdut1, xp, yp) * glm::dvec3(1000.0, -1000.0, -1000.0);
         
         orbit.push_back(ecef);
         
