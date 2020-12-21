@@ -43,7 +43,7 @@ void Label::init(Camera* camera, std::vector<Point> points) {
         // Only create label if name string was given
         if (point.name) {
             P p;
-            p.position = GeodeticToCart(point.coordinates);
+            p.position = point.coordinates;
             
             p.numCharAttrib = 0;
             

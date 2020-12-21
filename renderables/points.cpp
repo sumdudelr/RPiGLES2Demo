@@ -12,9 +12,9 @@ void Points::init(Camera* camera, std::vector<Point> points) {
     
     _points = points;
     
-    for (auto& p : _points) {
-        p.coordinates = GeodeticToCart(p.coordinates);
-    }
+    //~ for (auto& p : _points) {
+        //~ p.coordinates = GeodeticToCart(p.coordinates);
+    //~ }
     
     _shader.init("renderables/shaders/pointsV.glsl", "renderables/shaders/pointsF.glsl");
     

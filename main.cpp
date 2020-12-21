@@ -23,43 +23,6 @@ int main() {
     // Set up a signal handler for program exit
     std::signal(SIGINT, signal_handler);
     
-    // Points and labels
-    std::vector<Label::Point> pp = {
-        {
-            glm::vec3(glm::radians(-82.0f), glm::radians(39.0f), 1500000.0f),
-            glm::vec3(1.0f, 1.0f, 0.0f),
-            5.0f,
-            "Athens, OH",
-            glm::vec3(1.0f, 1.0f, 1.0f)
-        },
-        {
-            glm::vec3(glm::radians(-118.0f), glm::radians(34.0f), 1500000.0f),
-            glm::vec3(1.0f, 0.0f, 1.0f),
-            5.0f,
-            "Los Angeles, CA",
-            glm::vec3(1.0f, 1.0f, 1.0f)
-        },
-        {
-            glm::vec3(glm::radians(-84.5f), glm::radians(39.1f), 1000.0f),
-            glm::vec3(0.0f, 1.0f, 0.0f),
-            5.0f,
-            nullptr,
-            glm::vec3(0.0f)
-        }
-    };
-    
-    // Compute geodetic curve
-    std::vector<Lines::Line> curves = {
-        {
-            GeodeticCurve(
-                glm::vec3(glm::radians(-82.0f), glm::radians(39.0f), 1500000.0f),
-                glm::vec3(glm::radians(-118.0f), glm::radians(34.0f), 1500000.0f),
-                1.0f),
-            glm::vec3(1.0f, 0.0f, 0.0f),
-            3.0f
-        }
-    };
-    
     // Compute orbit from TLE
     std::vector<glm::vec3> orbit;
     char title[130]; char line1[130]; char line2[130];
@@ -97,29 +60,52 @@ int main() {
     strftime(buf, sizeof(buf), "%c %Z\n", std::gmtime(&current));
     std::cout << "Current:   " << buf;
     
-    double tsince = diff / 60.0; // start at the current time
-    stopmfe = tsince + 60.0; // stop 1 hour later
+    double period = M_PI/satrec.no_kozai; // aprrox. 1/2 orbial period
+    double tsince = diff / 60.0 - period; // current time - 1/2 period
+    stopmfe = diff / 60.0 + period; // current time + 1/2 period
+    
+    SGP4Funcs::sgp4(satrec, diff / 60.0, r, v);
+    double jd = satrec.jdsatepoch;
+    double jdfrac = satrec.jdsatepochF + tsince/1440.0;
+    if (jdfrac < 0.0) {
+        jd = jd - 1.0;
+        jdfrac = jdfrac + 1.0;
+    }
+    
+    double conv = M_PI / (180.0*3600.0);
+    double xp = -0.140682 * conv;
+    double yp = 0.333309 * conv;
+    double dut1 = -0.4399619;
+    double jdut1 = jd;
+    double jdut1frac = jdfrac + dut1/86400.0;
+    double ttt = (jdut1-2451545.0)/36525.0;
+    
+    glm::dvec3 ecef = teme2ecef(r, ttt, jdut1+jdut1frac, xp, yp) * glm::dvec3(1000.0);
+    
+    std::vector<Label::Point> pp = {
+        {
+            (glm::vec3)ecef,
+            glm::vec3(1.0f, 0.0f, 0.0f),
+            5.0f,
+            title,
+            glm::vec3(1.0f, 1.0f, 1.0f)
+        }
+    };
+        
     while (tsince < stopmfe) {
         SGP4Funcs::sgp4(satrec, tsince, r, v);
-        double jd = satrec.jdsatepoch;
-        double jdfrac = satrec.jdsatepochF + tsince/1440.0;
+        jd = satrec.jdsatepoch;
+        jdfrac = satrec.jdsatepochF + tsince/1440.0;
         if (jdfrac < 0.0) {
             jd = jd - 1.0;
             jdfrac = jdfrac + 1.0;
         }
         
-        double conv = M_PI / (180.0*3600.0);
-        double lod = 0.0015563;
-        double xp = -0.140682 * conv;
-        double yp = 0.333309 * conv;
-        double dut1 = -0.4399619;
-        double jdut1 = jd;
-        double jdut1frac = jdfrac + dut1/86400.0;
-        double ttt = (jdut1-2451545.0)/36525.0;
-        double ddpsi = -0.056487 * conv;
-        double ddeps = -0.002100 * conv;
+        jdut1 = jd;
+        jdut1frac = jdfrac + dut1/86400.0;
+        ttt = (jdut1-2451545.0)/36525.0;
         
-        glm::dvec3 ecef = teme2ecef(r, ttt, jdut1, xp, yp) * glm::dvec3(1000.0, -1000.0, -1000.0);
+        ecef = teme2ecef(r, ttt, jdut1+jdut1frac, xp, yp) * glm::dvec3(1000.0);
         
         orbit.push_back(ecef);
         
@@ -130,7 +116,7 @@ int main() {
     {
         {
             orbit,
-            glm::vec3(1.0f, 0.0f, 0.0f),
+            glm::vec3(1.0f, 1.0f, 0.0f),
             3.0f
         }
     };
