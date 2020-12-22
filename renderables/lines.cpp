@@ -24,12 +24,23 @@ void Lines::init(Camera* camera, std::vector<Line> lines) {
      for (size_t i = 0; i < _buffers.size(); i++) {
          // Vertex buffer
          glBindBuffer(GL_ARRAY_BUFFER, _buffers[i]);
-         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)*_curvePositions[i].points.size(), &_curvePositions[i].points[0], GL_STATIC_DRAW);
+         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)*_curvePositions[i].points.size(), &_curvePositions[i].points[0], GL_DYNAMIC_DRAW);
      }
      
      // Get attribute locations
      _vertLoc = glGetAttribLocation(_shader.ID, "Vert");
 }
+
+void Lines::update(std::vector<Line> lines) {
+    // ! Must be the same format as the original lines buffer !
+    _curvePositions = lines;
+    
+    for (size_t i = 0; i < _buffers.size(); i++) {
+         // Vertex buffer
+         glBindBuffer(GL_ARRAY_BUFFER, _buffers[i]);
+         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)*_curvePositions[i].points.size(), &_curvePositions[i].points[0], GL_DYNAMIC_DRAW);
+     }
+ }
 
 void Lines::render() {
     _shader.use();

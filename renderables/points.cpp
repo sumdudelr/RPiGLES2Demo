@@ -22,12 +22,20 @@ void Points::init(Camera* camera, std::vector<Point> points) {
     glGenBuffers(1, &_buffer);
     // Vertex buffer
     glBindBuffer(GL_ARRAY_BUFFER, _buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Point)*_points.size(), &_points[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Point)*_points.size(), &_points[0], GL_DYNAMIC_DRAW);
     
     // Get attribute locations
     _vertLoc = glGetAttribLocation(_shader.ID, "Vert");
     _colorLoc = glGetAttribLocation(_shader.ID, "Color");
     _sizeLoc = glGetAttribLocation(_shader.ID, "Size");
+}
+
+void Points::update(std::vector<Point> points) {
+    // ! Must be the same format as the original points buffer !
+    _points = points;
+    
+    glBindBuffer(GL_ARRAY_BUFFER, _buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Point)*_points.size(), &_points[0], GL_DYNAMIC_DRAW);
 }
 
 void Points::render() {

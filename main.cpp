@@ -25,14 +25,14 @@ int main() {
     std::signal(SIGINT, signal_handler);
     
     TLE tle;
-    tle.readTLE("BOBCAT-1.TLE");
+    tle.readTLE("gps-ops.txt");
     tle.updateTLE();
     
     Renderer render;
     render.initialize();
     
     Camera camera((float)render.screen_wid_, (float)render.screen_hei_, glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    camera.zoomToTarget(6378137.0f * 1.25f);
+    camera.zoomToTarget(6378137.0f * 4.0f);
     
     Globe globe;
     globe.init(&camera);
@@ -49,7 +49,18 @@ int main() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
+    std::time_t last = std::time(nullptr);
+    
     do {
+        // Check if orbit data should be updated
+        std::time_t current = std::time(nullptr);
+        if (std::difftime(current, last) > 60.0) {
+            last = current;
+            tle.updateTLE();
+            lines.update(tle.lines_);
+            label.update(tle.labels_);
+        }
+        
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         // Rotate the camera around the globe

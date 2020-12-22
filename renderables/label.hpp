@@ -33,6 +33,7 @@ public:
     Label();
     ~Label();
     void init(Camera* camera, std::vector<Point> points);
+    void update(std::vector<Point> points);
     void render();
     
 private:

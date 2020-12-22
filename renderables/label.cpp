@@ -126,6 +126,20 @@ void Label::init(Camera* camera, std::vector<Point> points) {
     _texcLoc = glGetAttribLocation(_shader.ID, "Texc");
 }
 
+void Label::update(std::vector<Point> points) {
+    // ! Must be the same format as the original points buffer !
+    std::vector<Points::Point> pps;
+    for (size_t i = 0; i < _points.size(); i++) {
+        _points[i].position = points[i].coordinates;
+        Points::Point pp = {
+            points[i].coordinates,
+            points[i].pointColor,
+            points[i].pointSize
+        };
+        pps.push_back(pp);
+    }
+}
+
 void Label::render() {
     _ppoints.render();
     

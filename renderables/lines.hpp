@@ -23,6 +23,7 @@ public:
     Lines();
     ~Lines();
     void init(Camera* camera, std::vector<Line> lines);
+    void update(std::vector<Line> lines);
     void render();
     
 private:
