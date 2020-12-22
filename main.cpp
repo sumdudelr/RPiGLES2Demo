@@ -5,6 +5,7 @@
 #include "points.hpp"
 #include "label.hpp"
 #include "ellipsoid.hpp"
+#include "tle.hpp"
 
 #include <csignal>
 #include <ctime>
@@ -23,108 +24,9 @@ int main() {
     // Set up a signal handler for program exit
     std::signal(SIGINT, signal_handler);
     
-    // Compute orbit from TLE
-    std::vector<glm::vec3> orbit;
-    char title[130]; char line1[130]; char line2[130];
-    std::ifstream file("BOBCAT-1.TLE");
-    file.getline(title, 130);
-    file.getline(line1, 130);
-    file.getline(line2, 130);
-    file.close();
-    double startmfe, stopmfe, deltamin;
-    elsetrec satrec;
-    SGP4Funcs::twoline2rv(line1, line2, 'c', 'e', 'a', wgs84, startmfe, stopmfe, deltamin, satrec);
-    double r[3], v[3];
-    
-    // Trim trailing spaces from title
-    int end = std::strlen(title) - 1;
-    while(end > 0 && std::isspace((unsigned char)title[end])) end--;
-    title[end+1] = '\0';
-
-    /* Convert Julian day to UTC
-     * The Julian epoch = Jan 1 
-     * The Julian date of any instant is the Julian day number plus the fraction
-     * of a day since the preceding noon in Universal Time.
-     */
-    int year, mon, day, hr, minute; double sec;
-    SGP4Funcs::invjday_SGP4(satrec.jdsatepoch, satrec.jdsatepochF, year, mon, day, hr, minute, sec);
-    std::tm jt{};
-    jt.tm_year = year - 1900;
-    jt.tm_mon = mon - 1;
-    jt.tm_mday = day;
-    jt.tm_hour = hr;
-    jt.tm_min = minute;
-    jt.tm_sec = (int)sec;
-    std::time_t epoch = timegm(&jt);
-    std::time_t current = std::time(nullptr);
-    double diff = std::difftime(current, epoch);
-    char buf[64];
-    strftime(buf, sizeof(buf), "%c %Z\n", std::gmtime(&epoch));
-    std::cout << "TLE epoch: " << buf;
-    strftime(buf, sizeof(buf), "%c %Z\n", std::gmtime(&current));
-    std::cout << "Current:   " << buf;
-    
-    double period = M_PI/satrec.no_kozai; // aprrox. 1/2 orbial period
-    double tsince = diff / 60.0 - period; // current time - 1/2 period
-    stopmfe = diff / 60.0 + period; // current time + 1/2 period
-    
-    SGP4Funcs::sgp4(satrec, diff / 60.0, r, v);
-    double jd = satrec.jdsatepoch;
-    double jdfrac = satrec.jdsatepochF + (diff / 60.0)/1440.0;
-    if (jdfrac < 0.0) {
-        jd = jd - 1.0;
-        jdfrac = jdfrac + 1.0;
-    }
-    
-    double conv = M_PI / (180.0*3600.0);
-    double xp = -0.140682 * conv;
-    double yp = 0.333309 * conv;
-    double dut1 = -0.4399619;
-    double jdut1 = jd;
-    double jdut1frac = jdfrac + dut1/86400.0;
-    double ttt = (jdut1-2451545.0)/36525.0;
-    
-    glm::dvec3 ecef = teme2ecef(r, ttt, jdut1+jdut1frac, xp, yp) * glm::dvec3(1000.0);
-    
-    std::vector<Label::Point> pp = {
-        {
-            (glm::vec3)ecef,
-            glm::vec3(1.0f, 0.0f, 0.0f),
-            5.0f,
-            title,
-            glm::vec3(1.0f, 1.0f, 1.0f)
-        }
-    };
-        
-    while (tsince < stopmfe) {
-        SGP4Funcs::sgp4(satrec, tsince, r, v);
-        jd = satrec.jdsatepoch;
-        jdfrac = satrec.jdsatepochF + tsince/1440.0;
-        if (jdfrac < 0.0) {
-            jd = jd - 1.0;
-            jdfrac = jdfrac + 1.0;
-        }
-        
-        jdut1 = jd;
-        jdut1frac = jdfrac + dut1/86400.0;
-        ttt = (jdut1-2451545.0)/36525.0;
-        
-        ecef = teme2ecef(r, ttt, jdut1+jdut1frac, xp, yp) * glm::dvec3(1000.0);
-        
-        orbit.push_back(ecef);
-        
-        tsince++;
-    }
-    
-    std::vector<Lines::Line> ls =
-    {
-        {
-            orbit,
-            glm::vec3(1.0f, 1.0f, 0.0f),
-            3.0f
-        }
-    };
-            
+    TLE tle;
+    tle.readTLE("BOBCAT-1.TLE");
+    tle.updateTLE();
     
     Renderer render;
     render.initialize();
@@ -136,10 +38,10 @@ int main() {
     globe.init(&camera);
     
     Lines lines;
-    lines.init(&camera, ls);
+    lines.init(&camera, tle.lines_);
     
     Label label;
-    label.init(&camera, pp);
+    label.init(&camera, tle.labels_);
     
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);

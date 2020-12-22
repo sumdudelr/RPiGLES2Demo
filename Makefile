@@ -1,6 +1,6 @@
 AGCC = g++
 CXX_FLAG = -std=c++11 -Wall -Wextra -pthread
-INCLUDE = -I/opt/vc/include -Igeometry -Irenderables -Irenderer -Ithird_party
+INCLUDE = -I/opt/vc/include -Igeometry -Irenderables -Irenderer -ITLE -Ithird_party
 LIBRARY = -L/opt/vc/lib -lbcm_host -lbrcmGLESv2 -lbrcmEGL
 TARGET = gles_demo.out
 
@@ -25,6 +25,9 @@ camera.o: renderer/camera.cpp renderer/camera.hpp
 tessellator.o: geometry/tessellator.cpp geometry/tessellator.hpp
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 	
+tle.o: TLE/tle.cpp TLE/tle.hpp third_party/SGP4.h renderables/lines.hpp renderables/label.hpp geometry/ellipsoid.hpp
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
+	
 third_party.o: third_party/third_party.cpp third_party/stb_image.h third_party/stb_image_resize.h third_party/stb_truetype.h
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 	
@@ -43,8 +46,8 @@ points.o: renderables/points.cpp renderables/points.hpp geometry/ellipsoid.hpp r
 label.o: renderables/label.cpp renderables/label.hpp renderer/shader.hpp renderer/camera.hpp third_party/stb_truetype.h
 	$(AGCC) $(CXX_FLAG) $(INCLUDE) $< $(LIBRARY) -c -o $@
 
-gles_demo.out: main.cpp renderer.o camera.o shader.o ellipsoid.o tessellator.o globe.o lines.o points.o label.o third_party.o SGP4.o
-	$(AGCC) $(CXX_FLAG) $(INCLUDE) renderer.o shader.o ellipsoid.o camera.o tessellator.o third_party.o globe.o lines.o points.o label.o SGP4.o $< $(LIBRARY) -o $@
+gles_demo.out: main.cpp renderer.o camera.o shader.o ellipsoid.o tessellator.o tle.o globe.o lines.o points.o label.o third_party.o SGP4.o
+	$(AGCC) $(CXX_FLAG) $(INCLUDE) renderer.o shader.o ellipsoid.o camera.o tessellator.o tle.o third_party.o globe.o lines.o points.o label.o SGP4.o $< $(LIBRARY) -o $@
 	
 clean:
 	rm -f $(TARGET) *.o *~
