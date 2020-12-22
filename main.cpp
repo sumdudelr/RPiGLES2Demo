@@ -35,7 +35,11 @@ int main() {
     elsetrec satrec;
     SGP4Funcs::twoline2rv(line1, line2, 'c', 'e', 'a', wgs84, startmfe, stopmfe, deltamin, satrec);
     double r[3], v[3];
-    SGP4Funcs::sgp4(satrec, 0, r, v);
+    
+    // Trim trailing spaces from title
+    int end = std::strlen(title) - 1;
+    while(end > 0 && std::isspace((unsigned char)title[end])) end--;
+    title[end+1] = '\0';
 
     /* Convert Julian day to UTC
      * The Julian epoch = Jan 1 
@@ -66,7 +70,7 @@ int main() {
     
     SGP4Funcs::sgp4(satrec, diff / 60.0, r, v);
     double jd = satrec.jdsatepoch;
-    double jdfrac = satrec.jdsatepochF + tsince/1440.0;
+    double jdfrac = satrec.jdsatepochF + (diff / 60.0)/1440.0;
     if (jdfrac < 0.0) {
         jd = jd - 1.0;
         jdfrac = jdfrac + 1.0;
@@ -109,7 +113,7 @@ int main() {
         
         orbit.push_back(ecef);
         
-        tsince += deltamin / 10.0;
+        tsince++;
     }
     
     std::vector<Lines::Line> ls =

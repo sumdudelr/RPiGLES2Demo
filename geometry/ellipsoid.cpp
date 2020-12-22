@@ -87,22 +87,16 @@ glm::dmat3 polarm(double xp, double yp, double ttt) {
     double cosyp = std::cos(yp);
     double sinyp = std::sin(yp);
     
-    double convrt = M_PI / (3600.0/180.0);
-    // approx. sp value in rad
-    double sp = -47.0e-6 * ttt * convrt;
-    double cossp = std::cos(sp);
-    double sinsp = std::sin(sp);
-    
     glm::dmat3 result{
-        cosxp * cossp,
-        cosxp * sinsp,
-        sinxp,
-        -cosyp * sinsp + sinyp * sinxp * cossp,
-        cosyp * cossp + sinyp * sinxp * sinsp,
-        -sinyp * cosxp,
-        -sinyp * sinsp - cosyp * sinxp * cossp,
-        sinyp * cossp - cosyp * sinxp * sinsp,
-        cosyp * cosxp
+        cosxp,
+        sinxp * sinyp,
+        sinxp * cosyp,
+        0.0,
+        cosyp,
+        -sinyp,
+        -sinxp,
+        cosxp * sinyp,
+        cosxp * cosyp
     };
         
     return result;
