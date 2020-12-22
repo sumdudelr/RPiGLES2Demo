@@ -138,6 +138,7 @@ void Label::update(std::vector<Point> points) {
         };
         pps.push_back(pp);
     }
+    _ppoints.update(pps);
 }
 
 void Label::render() {

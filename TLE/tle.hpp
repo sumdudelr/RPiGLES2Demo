@@ -15,10 +15,7 @@ public:
     ~TLE();
     
     void readTLE(const char* filename);
-    void updateTLE();
-    
-    std::vector<Label::Point> labels_;
-    std::vector<Lines::Line> lines_;
+    void updateTLE(std::vector<Label::Point> &labels, std::vector<Lines::Line> &lines);
     
 private:
     struct Sat {

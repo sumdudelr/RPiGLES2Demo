@@ -33,14 +33,11 @@ void TLE::readTLE(const char* filename) {
     }
 }
 
-void TLE::updateTLE() {
+void TLE::updateTLE(std::vector<Label::Point> &labels, std::vector<Lines::Line> &lines) {
     double conv = M_PI / (180.0*3600.0);
     double xp = -0.140682 * conv;
     double yp = 0.333309 * conv;
     double dut1 = -0.4399619;
-    
-    std::vector<Label::Point> labels;
-    std::vector<Lines::Line> lines;
     
     std::time_t current = std::time(nullptr);
     
@@ -117,7 +114,4 @@ void TLE::updateTLE() {
         };
         lines.push_back(line);
     }
-    
-    labels_ = labels;
-    lines_ = lines;
 }

@@ -9,7 +9,8 @@
 
 #include <csignal>
 #include <ctime>
-#include <locale>
+#include <thread>
+#include <mutex>
 
 #include "third_party/SGP4.h"
 
@@ -20,56 +21,28 @@ void signal_handler(int signal) {
         terminate = 1;
 }
 
-int main() {
-    // Set up a signal handler for program exit
-    std::signal(SIGINT, signal_handler);
-    
-    TLE tle;
-    tle.readTLE("gps-ops.txt");
-    tle.updateTLE();
-    
-    Renderer render;
-    render.initialize();
-    
-    Camera camera((float)render.screen_wid_, (float)render.screen_hei_, glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    camera.zoomToTarget(6378137.0f * 4.0f);
-    
-    Globe globe;
-    globe.init(&camera);
-    
-    Lines lines;
-    lines.init(&camera, tle.lines_);
-    
-    Label label;
-    label.init(&camera, tle.labels_);
-    
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
-    std::time_t last = std::time(nullptr);
-    
+TLE tle;
+Renderer render;
+Camera* camera;
+Globe globe;
+Lines lines;
+Label label;
+std::mutex dataMutex;
+
+void renderLoop() {
     do {
-        // Check if orbit data should be updated
-        std::time_t current = std::time(nullptr);
-        if (std::difftime(current, last) > 60.0) {
-            last = current;
-            tle.updateTLE();
-            lines.update(tle.lines_);
-            label.update(tle.labels_);
-        }
-        
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+            
         // Rotate the camera around the globe
-        camera.rotateAroundZ(0.3f);
+        camera->rotateAroundZ(0.3f);
         
-        globe.render();
-        lines.render();
-        label.render();
-        render.updateScreen();
+        {
+            const std::lock_guard<std::mutex> lock(dataMutex);
+            globe.render();
+            lines.render();
+            label.render();
+            render.updateScreen();
+        }
         
         // Check for errors
         GLenum err = glGetError();
@@ -81,8 +54,54 @@ int main() {
                 std::cerr << "Invalid value!" << std::endl;
             terminate = true;
         }
-    } while(!terminate);
-    
-    // Clean up
+    } while (!terminate);
     render.cleanUp();
+}
+
+void TLELoop() {
+    do {
+        std::this_thread::sleep_for(std::chrono::seconds(60));
+        
+        std::vector<Label::Point> labels;
+        std::vector<Lines::Line> curves;
+        tle.updateTLE(labels, curves);
+        const std::lock_guard<std::mutex> lock(dataMutex);
+        lines.update(curves);
+        label.update(labels);
+        std::cout << "Updated Orbit Data!" << std::endl;
+    } while (!terminate);
+}
+
+int main() {
+    // Set up a signal handler for program exit
+    std::signal(SIGINT, signal_handler);
+    
+    std::vector<Label::Point> labels;
+    std::vector<Lines::Line> curves;
+    tle.readTLE("gps-ops.txt");
+    tle.updateTLE(labels, curves);
+    
+    render.initialize();
+    
+    camera = new Camera((float)render.screen_wid_, (float)render.screen_hei_, glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    camera->zoomToTarget(6378137.0f * 4.0f);
+    
+    globe.init(camera);
+    
+    lines.init(camera, curves);
+    
+    label.init(camera, labels);
+    
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    std::thread u(TLELoop);
+    renderLoop();
+    
+    u.join();
+    
+    delete camera;
 }
