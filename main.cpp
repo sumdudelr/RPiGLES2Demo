@@ -62,6 +62,10 @@ void TLELoop() {
     do {
         std::this_thread::sleep_for(std::chrono::seconds(60));
         
+        // Find the current position of the sun
+        std::time_t current = std::time(nullptr);
+        globe.updateSun(current);
+        
         std::vector<Label::Point> labels;
         std::vector<Lines::Line> curves;
         tle.updateTLE(labels, curves);
@@ -78,7 +82,8 @@ int main() {
     
     std::vector<Label::Point> labels;
     std::vector<Lines::Line> curves;
-    tle.readTLE("gps-ops.txt");
+    //~ tle.readTLE("gps-ops.txt");
+    tle.readTLE("BOBCAT-1.TLE");
     tle.updateTLE(labels, curves);
     
     render.initialize();

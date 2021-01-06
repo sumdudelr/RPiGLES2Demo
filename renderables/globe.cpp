@@ -12,7 +12,8 @@
 #define TEXTURE_SIZE_BYTES 16+1024*1024*3/6
 
 Globe::Globe() {
-    
+    std::time_t current = std::time(nullptr);
+    updateSun(current);
 }
 
 Globe::~Globe() {
@@ -90,8 +91,7 @@ void Globe::render() {
     _shader.setMat3("ipModel", ipModel);
     
     // Light position
-    glm::vec3 light(-1.0f,1.0f,0.0f);
-    _shader.setVec3("lightPos", light);
+    _shader.setVec3("lightPos", _light);
     
     // Position attribute
     glEnableVertexAttribArray(_vertLoc);
@@ -108,4 +108,22 @@ void Globe::render() {
     
     glDisableVertexAttribArray(_vertLoc);
     glDisableVertexAttribArray(_normLoc);
+}
+
+void Globe::updateSun(std::time_t current) {
+    std::tm j2000;
+    j2000.tm_sec = 0;
+    j2000.tm_min = 0;
+    j2000.tm_hour = 0;
+    j2000.tm_mday = 1;
+    j2000.tm_mon = 0;
+    j2000.tm_year = 100;
+    std::time_t j2000t = std::mktime(&j2000);
+    double n = std::difftime(current, j2000t);
+    n /= 86400.0;
+    double e = glm::radians(23.439 - 0.0000004 * n);
+    double mean_lon = glm::radians(std::fmod(280.460 + 0.9856033 * n, 360.0));
+    double mean_ano = glm::radians(std::fmod(357.528 + 0.9856003 * n, 360.0));
+    double lon = mean_lon + glm::radians(1.915) * std::sin(mean_ano) + glm::radians(0.020) * std::sin(2 * mean_ano);
+    _light = glm::vec3(std::cos(lon), std::cos(e)*std::sin(lon), -std::sin(e)*std::cos(lon));
 }

@@ -6,18 +6,23 @@
 #include "tessellator.hpp"
 #include "camera.hpp"
 
+#include <ctime>
+
 class Globe {
 public:
     Globe();
     ~Globe();
     void init(Camera* camera);
     void render();
+    void updateSun(std::time_t current);
     
 private:
     glm::vec3 _position;
     Mesh _mesh;
     Shader _shader;
     GLuint _buffers[2];
+    
+    glm::vec3 _light;
     
     // Attribute locations
     GLint _vertLoc;
