@@ -115,3 +115,51 @@ void TLE::updateTLE(std::vector<Label::Point> &labels, std::vector<Lines::Line> 
         lines.push_back(line);
     }
 }
+
+void TLE::updateTLE(std::vector<Points::Point> &points) {
+    double conv = M_PI / (180.0*3600.0);
+    double xp = -0.140682 * conv;
+    double yp = 0.333309 * conv;
+    double dut1 = -0.4399619;
+    
+    std::time_t current = std::time(nullptr);
+    
+    int year, mon, day, hr, minute; double sec;
+    double r[3], v[3];
+    
+    for (auto& sat : sats_) {
+        SGP4Funcs::invjday_SGP4(sat.satrec.jdsatepoch, sat.satrec.jdsatepochF, year, mon, day, hr, minute, sec);
+        
+        std::tm jt{};
+        jt.tm_year = year - 1900;
+        jt.tm_mon = mon - 1;
+        jt.tm_mday = day;
+        jt.tm_hour = hr;
+        jt.tm_min = minute;
+        jt.tm_sec = (int)sec;
+        std::time_t epoch = timegm(&jt);
+        double diff = std::difftime(current, epoch) / 60.0;
+        
+        // Get position for the current point in time
+        SGP4Funcs::sgp4(sat.satrec, diff, r, v);
+        double jd = sat.satrec.jdsatepoch;
+        double jdfrac = sat.satrec.jdsatepochF + diff/1440.0;
+        if (jdfrac < 0.0) {
+            jd = jd - 1.0;
+            jdfrac = jdfrac + 1.0;
+        }
+        
+        double jdut1 = jd;
+        double jdut1frac = jdfrac + dut1/86400.0;
+        double ttt = (jdut1-2451545.0)/36525.0;
+        
+        glm::dvec3 ecef = teme2ecef(r, ttt, jdut1+jdut1frac, xp, yp) * glm::dvec3(1000.0);
+        
+        Points::Point point{
+            (glm::vec3)ecef,
+            glm::vec3(1.0f, 0.0f, 0.0f),
+            5.0f
+        };
+        points.push_back(point);
+    }
+}

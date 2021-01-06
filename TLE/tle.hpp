@@ -16,6 +16,7 @@ public:
     
     void readTLE(const char* filename);
     void updateTLE(std::vector<Label::Point> &labels, std::vector<Lines::Line> &lines);
+    void updateTLE(std::vector<Points::Point> &points);
     
 private:
     struct Sat {
